@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../constants/api_constants.dart';
 import '../models/experiment.dart';
+import 'auth_service.dart';
 
 
 class ApiService {
@@ -59,6 +60,39 @@ class ApiService {
     } else {
       throw Exception('Failed to fetch experiments: ${response.statusCode}');
     }
+  }
+
+   static Future<http.Response> request(
+    String endpoint,
+    String method, {
+    Map<String, dynamic>? body,
+    bool authRequired = true,
+  }) async {
+    final url = Uri.parse('$BASE_URL/api/student$endpoint');
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+
+    if (authRequired) {
+      final token = await AuthService.getToken();
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    }
+
+    http.Response response;
+    if (method == 'POST') {
+      response = await http.post(url, headers: headers, body: jsonEncode(body));
+    } else {
+      response = await http.get(url, headers: headers);
+    }
+
+    if (response.statusCode == 401) {
+      await AuthService.logout();
+      throw Exception('Session expired. Please login again.');
+    }
+
+    return response;
   }
   
 }

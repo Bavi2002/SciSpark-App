@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/auth_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/progress_provider.dart'; // New provider for progress tracking
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: ExperimentListScreen(),
+      home: AuthWrapper(),
     );
   }
 }

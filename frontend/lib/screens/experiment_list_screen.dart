@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'add_experiment_screen.dart';
-import 'experiment_detail_screen.dart';
+import 'experiment_screen.dart';
 import '../models/experiment.dart';
 import '../services/api_service.dart';
 
@@ -233,8 +233,7 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ExperimentDetailScreen(experiment: experiments[i]),
-                      ),
+                        builder: (_) => ExperimentDetailScreen(experimentId: experiments[i].id, title: experiments[i].title)),
                     ),
                     child: Container(
                       padding: EdgeInsets.all(20),
