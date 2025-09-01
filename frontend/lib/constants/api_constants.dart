@@ -1,0 +1,1 @@
+const String BASE_URL = 'https://intent-hideously-pika.ngrok-free.app'; // Replace with your backend URL
