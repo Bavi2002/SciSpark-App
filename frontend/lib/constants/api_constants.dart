@@ -1,2 +1,2 @@
 const String BASE_URL = 'https://intent-hideously-pika.ngrok-free.app'; // Replace with your backend URL
-const String OPENAI_API_KEY = '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'; // Replace with your OpenAI API key
+const String OPENAI_API_KEY =
