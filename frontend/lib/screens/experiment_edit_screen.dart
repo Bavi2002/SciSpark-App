@@ -30,20 +30,26 @@ class _ExperimentEditScreenState extends State<ExperimentEditScreen> {
 
   Future<void> _fetchExperiment() async {
     try {
-      final response = await ApiService.request('/api/experiments/${widget.experimentId}', 'GET');
+      final response = await ApiService.request(
+        '/api/experiments/${widget.experimentId}',
+        'GET',
+      );
       if (response.statusCode == 200) {
         setState(() {
           _experiment = jsonDecode(response.body);
           _titleController.text = _experiment!['title'] ?? '';
           _descriptionController.text = _experiment!['description'] ?? '';
           _subjectAreaController.text = _experiment!['subject'] ?? '';
-          _difficultyLevelController.text = _experiment!['difficulty']?.toString() ?? '';
-          _materialsController.text = (_experiment!['materials'] as List<dynamic>?)
-              ?.join(', ') ?? '';
+          _difficultyLevelController.text =
+              _experiment!['difficulty']?.toString() ?? '';
+          _materialsController.text =
+              (_experiment!['materials'] as List<dynamic>?)?.join(', ') ?? '';
         });
       } else {
         setState(() {
-          _error = jsonDecode(response.body)['error'] ?? 'Failed to fetch experiment';
+          _error =
+              jsonDecode(response.body)['error'] ??
+              'Failed to fetch experiment';
         });
       }
     } catch (e) {
@@ -65,12 +71,18 @@ class _ExperimentEditScreenState extends State<ExperimentEditScreen> {
         'difficulty': _difficultyLevelController.text,
         'materials': materials,
       };
-      final response = await ApiService.request('/api/experiments/${widget.experimentId}', 'PUT', body: body);
+      final response = await ApiService.request(
+        '/api/experiments/${widget.experimentId}',
+        'PUT',
+        body: body,
+      );
       if (response.statusCode == 200) {
         Navigator.pop(context);
       } else {
         setState(() {
-          _error = jsonDecode(response.body)['error'] ?? 'Failed to update experiment';
+          _error =
+              jsonDecode(response.body)['error'] ??
+              'Failed to update experiment';
         });
       }
     } catch (e) {
@@ -82,12 +94,17 @@ class _ExperimentEditScreenState extends State<ExperimentEditScreen> {
 
   Future<void> _deleteExperiment() async {
     try {
-      final response = await ApiService.request('/api/experiments/${widget.experimentId}', 'DELETE');
+      final response = await ApiService.request(
+        '/api/experiments/${widget.experimentId}',
+        'DELETE',
+      );
       if (response.statusCode == 200) {
         Navigator.pop(context);
       } else {
         setState(() {
-          _error = jsonDecode(response.body)['error'] ?? 'Failed to delete experiment';
+          _error =
+              jsonDecode(response.body)['error'] ??
+              'Failed to delete experiment';
         });
       }
     } catch (e) {
@@ -124,7 +141,9 @@ class _ExperimentEditScreenState extends State<ExperimentEditScreen> {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: Text('Delete Experiment'),
-                  content: Text('Are you sure you want to delete this experiment?'),
+                  content: Text(
+                    'Are you sure you want to delete this experiment?',
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
@@ -168,9 +187,12 @@ class _ExperimentEditScreenState extends State<ExperimentEditScreen> {
             ),
             TextField(
               controller: _materialsController,
-              decoration: InputDecoration(labelText: 'Materials (comma-separated)'),
+              decoration: InputDecoration(
+                labelText: 'Materials (comma-separated)',
+              ),
             ),
-            if (_error != null) Text(_error!, style: TextStyle(color: Colors.red)),
+            if (_error != null)
+              Text(_error!, style: TextStyle(color: Colors.red)),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: _updateExperiment,
@@ -205,7 +227,9 @@ class _ExperimentEditScreenState extends State<ExperimentEditScreen> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: Text('Delete Step'),
-                            content: Text('Are you sure you want to delete this step?'),
+                            content: Text(
+                              'Are you sure you want to delete this step?',
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
