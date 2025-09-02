@@ -3,6 +3,7 @@ import 'package:frontend/screens/achievements_screen.dart';
 import 'package:frontend/screens/auth_wrapper.dart';
 import 'package:frontend/screens/experiment_list_screen.dart';
 import 'package:frontend/screens/progress_screen.dart';
+import 'package:frontend/screens/teacher_home_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 
 
@@ -31,6 +32,10 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AchievementsScreen())),
               child: Text('View Achievements'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherHomeScreen())),
+              child: Text('View Teacher Home'),
             ),
           ],
         ),

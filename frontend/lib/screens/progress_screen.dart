@@ -5,7 +5,8 @@ import '../services/api_service.dart';
 
 class ProgressScreen extends StatelessWidget {
   Future<List<dynamic>> _fetchProgress() async {
-    final response = await ApiService.request('/progress', 'GET');
+    final response = await ApiService.request('/api/student/progress', 'GET');
+    print('Fetching progress data... ${response.body}');
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
@@ -25,8 +26,14 @@ class ProgressScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final prog = snapshot.data![index];
                 return ListTile(
-                  title: Text(prog['experimentId']['title']),
-                  subtitle: Text('Status: ${prog['status']} | Completed Steps: ${prog['completedSteps'].length}'),
+                  title: Text(
+                    prog['experimentId'] != null
+                        ? prog['experimentId']['title'] ?? 'Unknown Experiment'
+                        : 'Unknown Experiment',
+                  ),
+                  subtitle: Text(
+                    'Status: ${prog['status']} | Completed Steps: ${prog['completedSteps']?.length ?? 0}',
+                  ),
                 );
               },
             );

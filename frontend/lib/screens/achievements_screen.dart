@@ -4,7 +4,10 @@ import 'package:frontend/services/api_service.dart';
 
 class AchievementsScreen extends StatelessWidget {
   Future<List<dynamic>> _fetchAchievements() async {
-    final response = await ApiService.request('/achievements', 'GET');
+    final response = await ApiService.request(
+      '/api/student/achievements',
+      'GET',
+    );
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     }
@@ -24,8 +27,12 @@ class AchievementsScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final ach = snapshot.data![index];
                 return ListTile(
-                  title: Text(ach['badge']),
-                  subtitle: Text('For: ${ach['experimentId']['title']}'),
+                  title: Text(ach['badge'] ?? 'Unknown Badge'),
+                  subtitle: Text(
+                    ach['experimentId'] != null
+                        ? 'For: ${ach['experimentId']['title'] ?? 'Unknown Experiment'}'
+                        : 'For: Unknown Experiment',
+                  ),
                 );
               },
             );

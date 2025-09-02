@@ -31,7 +31,8 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   }
 
   Future<void> _fetchExperiment() async {
-    final response = await ApiService.request('/experiments/${widget.experimentId}', 'GET');
+    final response = await ApiService.request('/api/experiments/${widget.experimentId}', 'GET');
+    print('Fetching experiment data... ${response.body}');
     if (response.statusCode == 200) {
       setState(() {
         _experiment = jsonDecode(response.body);
@@ -40,7 +41,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   }
 
   Future<void> _checkProgress() async {
-    final progressResponse = await ApiService.request('/progress', 'GET');
+    final progressResponse = await ApiService.request('/api/student/progress', 'GET');
     if (progressResponse.statusCode == 200) {
       final progressList = jsonDecode(progressResponse.body) as List;
       final progress = progressList.firstWhere(
@@ -57,7 +58,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   }
 
   Future<void> _startExperiment() async {
-    final response = await ApiService.request('/progress/start', 'POST', body: {'experimentId': widget.experimentId});
+    final response = await ApiService.request('/api/student/progress/start', 'POST', body: {'experimentId': widget.experimentId});
     if (response.statusCode == 200) {
       setState(() {
         _isStarted = true;
@@ -66,7 +67,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   }
 
   Future<void> _markStepCompleted(int stepNumber) async {
-    final response = await ApiService.request('/progress/step', 'POST', body: {'experimentId': widget.experimentId, 'stepNumber': stepNumber});
+    final response = await ApiService.request('/api/student/progress/step', 'POST', body: {'experimentId': widget.experimentId, 'stepNumber': stepNumber});
     if (response.statusCode == 200) {
       setState(() {
         if (!_completedSteps.contains(stepNumber)) {

@@ -4,7 +4,6 @@ import '../constants/api_constants.dart';
 import '../models/experiment.dart';
 import 'auth_service.dart';
 
-
 class ApiService {
   static Future<Map<String, dynamic>> askQuestion(
     String experimentId,
@@ -29,6 +28,7 @@ class ApiService {
   static Future<Map<String, dynamic>> addExperiment(
     Map<String, dynamic> experimentData,
   ) async {
+    print(experimentData);
     final response = await http.post(
       Uri.parse('$BASE_URL/api/experiments/add'),
       headers: {
@@ -37,6 +37,8 @@ class ApiService {
       },
       body: jsonEncode(experimentData),
     );
+
+    print('API Response: ${response.body}');
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -54,24 +56,36 @@ class ApiService {
       },
     );
 
+    print('API Response: ${response.body}');
+
     if (response.statusCode == 200) {
-      List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Experiment.fromJson(json)).toList();
+      final decoded = json.decode(response.body);
+      print('Decoded response: $decoded');
+      if (decoded is List) {
+        return decoded.map<Experiment>((e) => Experiment.fromJson(e)).toList();
+      } else if (decoded is Map && decoded.containsKey('experiments')) {
+        final experiments = decoded['experiments'];
+        if (experiments is List) {
+          return experiments
+              .map<Experiment>((e) => Experiment.fromJson(e))
+              .toList();
+        }
+      }
+      // If response is not a list or doesn't contain 'experiments', return empty list
+      return [];
     } else {
       throw Exception('Failed to fetch experiments: ${response.statusCode}');
     }
   }
 
-   static Future<http.Response> request(
+  static Future<http.Response> request(
     String endpoint,
     String method, {
     Map<String, dynamic>? body,
     bool authRequired = true,
   }) async {
-    final url = Uri.parse('$BASE_URL/api/student$endpoint');
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
+    final url = Uri.parse('$BASE_URL$endpoint');
+    final headers = <String, String>{'Content-Type': 'application/json'};
 
     if (authRequired) {
       final token = await AuthService.getToken();
@@ -81,10 +95,26 @@ class ApiService {
     }
 
     http.Response response;
-    if (method == 'POST') {
-      response = await http.post(url, headers: headers, body: jsonEncode(body));
-    } else {
-      response = await http.get(url, headers: headers);
+    switch (method) {
+      case 'POST':
+        response = await http.post(
+          url,
+          headers: headers,
+          body: jsonEncode(body),
+        );
+        break;
+      case 'PUT':
+        response = await http.put(
+          url,
+          headers: headers,
+          body: jsonEncode(body),
+        );
+        break;
+      case 'DELETE':
+        response = await http.delete(url, headers: headers);
+        break;
+      default:
+        response = await http.get(url, headers: headers);
     }
 
     if (response.statusCode == 401) {
@@ -94,5 +124,4 @@ class ApiService {
 
     return response;
   }
-  
 }

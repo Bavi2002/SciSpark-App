@@ -16,6 +16,7 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
   void initState() {
     super.initState();
     _experimentsFuture = ApiService.getExperiments();
+    print(_experimentsFuture);
   }
 
   @override

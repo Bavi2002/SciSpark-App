@@ -3,7 +3,6 @@ import 'package:frontend/screens/auth_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/progress_provider.dart'; // New provider for progress tracking
-import 'screens/experiment_list_screen.dart';
 
 void main() {
   runApp(

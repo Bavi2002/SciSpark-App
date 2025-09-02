@@ -28,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (_isRegister) 'name': _nameController.text,
       };
       final response = await ApiService.request(
-        _isRegister ? '/register' : '/login',
+        _isRegister ? '/api/student/register' : '/api/student/login',
         'POST',
         body: body,
         authRequired: false,

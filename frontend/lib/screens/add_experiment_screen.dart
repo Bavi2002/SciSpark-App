@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/openai_service.dart';
 import '../services/api_service.dart';
 
 class AddExperimentScreen extends StatefulWidget {
@@ -17,6 +18,8 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
   final _stepInstructionController = TextEditingController();
   final _stepMediaUrlController = TextEditingController();
   bool _isSubmitting = false;
+  String? _error;
+  bool _isLoadingAI = false;
 
   void _addStep() {
     if (_stepInstructionController.text.trim().isEmpty) {
@@ -36,12 +39,14 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
       );
       return;
     }
-    
+
     setState(() {
       _steps.add({
         'stepNumber': _steps.length + 1,
         'instruction': _stepInstructionController.text.trim(),
-        'mediaUrl': _stepMediaUrlController.text.trim().isNotEmpty ? _stepMediaUrlController.text.trim() : null,
+        'mediaUrl': _stepMediaUrlController.text.trim().isNotEmpty
+            ? _stepMediaUrlController.text.trim()
+            : null,
       });
       _stepInstructionController.clear();
       _stepMediaUrlController.clear();
@@ -58,22 +63,51 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
     });
   }
 
+    Future<void> _generateMetadata() async {
+    if (_titleController.text.isEmpty) {
+      setState(() {
+        _error = 'Please enter a title to generate metadata';
+      });
+      return;
+    }
+    setState(() => _isLoadingAI = true);
+    try {
+      final metadata = await OpenAIService.generateExperimentMetadata(_titleController.text);
+      setState(() {
+        _descriptionController.text = metadata['description'] ?? '';
+        _subjectController.text = metadata['subject'] ?? '';
+        _difficultyController.text = metadata['difficulty'] ?? '';
+        _materialsController.text = (metadata['materials'] as List<dynamic>?)?.join(', ') ?? '';
+        _isLoadingAI = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoadingAI = false;
+      });
+    }
+  }
+
+
   void _submit() async {
     if (_formKey.currentState!.validate() && _steps.isNotEmpty) {
       setState(() {
         _isSubmitting = true;
       });
-      
+
       try {
         await ApiService.addExperiment({
           'title': _titleController.text,
           'description': _descriptionController.text,
           'subject': _subjectController.text,
           'difficulty': _difficultyController.text,
-          'materials': _materialsController.text.split(',').map((e) => e.trim()).toList(),
+          'materials': _materialsController.text
+              .split(',')
+              .map((e) => e.trim())
+              .toList(),
           'steps': _steps,
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -85,7 +119,9 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
         Navigator.pop(context);
@@ -101,7 +137,9 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
             ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       } finally {
@@ -175,7 +213,10 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.red, width: 2),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
             ),
           ),
         ],
@@ -224,10 +265,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
         ),
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: Colors.grey[200],
-          ),
+          child: Container(height: 1, color: Colors.grey[200]),
         ),
       ),
       body: Form(
@@ -284,7 +322,8 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                     label: 'Experiment Title',
                     icon: Icons.title,
                     hint: 'Enter a descriptive title',
-                    validator: (value) => value!.isEmpty ? 'Title is required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Title is required' : null,
                   ),
                   _buildInputField(
                     controller: _descriptionController,
@@ -292,21 +331,24 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                     icon: Icons.description,
                     hint: 'Describe what this experiment is about',
                     maxLines: 3,
-                    validator: (value) => value!.isEmpty ? 'Description is required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Description is required' : null,
                   ),
                   _buildInputField(
                     controller: _subjectController,
                     label: 'Subject',
                     icon: Icons.school,
                     hint: 'e.g., Chemistry, Physics, Biology',
-                    validator: (value) => value!.isEmpty ? 'Subject is required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Subject is required' : null,
                   ),
                   _buildInputField(
                     controller: _difficultyController,
                     label: 'Difficulty Level',
                     icon: Icons.bar_chart,
                     hint: 'e.g., Beginner, Intermediate, Advanced',
-                    validator: (value) => value!.isEmpty ? 'Difficulty is required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Difficulty is required' : null,
                   ),
                   _buildInputField(
                     controller: _materialsController,
@@ -314,7 +356,8 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                     icon: Icons.inventory_2,
                     hint: 'Enter materials separated by commas',
                     maxLines: 2,
-                    validator: (value) => value!.isEmpty ? 'Materials are required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Materials are required' : null,
                   ),
                 ],
               ),
@@ -366,7 +409,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                     ],
                   ),
                   SizedBox(height: 24),
-                  
+
                   _buildInputField(
                     controller: _stepInstructionController,
                     label: 'Step Instruction',
@@ -380,7 +423,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                     icon: Icons.image,
                     hint: 'Add an image or video URL',
                   ),
-                  
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -436,77 +479,90 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    ..._steps.asMap().entries.map((entry) => Container(
-                      margin: EdgeInsets.only(bottom: 12),
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[200]!),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${entry.value['stepNumber']}',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                    ..._steps.asMap().entries.map(
+                      (entry) => Container(
+                        margin: EdgeInsets.only(bottom: 12),
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${entry.value['stepNumber']}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  entry.value['instruction'],
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                if (entry.value['mediaUrl'] != null) ...[
-                                  SizedBox(height: 4),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    'Media: ${entry.value['mediaUrl']}',
+                                    entry.value['instruction'],
                                     style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
+                                  if (entry.value['mediaUrl'] != null) ...[
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Media: ${entry.value['mediaUrl']}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            onPressed: () => _removeStep(entry.key),
-                            icon: Icon(Icons.delete_outline, color: Colors.red[400]),
-                            padding: EdgeInsets.all(8),
-                            constraints: BoxConstraints(),
-                          ),
-                        ],
+                            IconButton(
+                              onPressed: () => _removeStep(entry.key),
+                              icon: Icon(
+                                Icons.delete_outline,
+                                color: Colors.red[400],
+                              ),
+                              padding: EdgeInsets.all(8),
+                              constraints: BoxConstraints(),
+                            ),
+                          ],
+                        ),
                       ),
-                    )),
+                    ),
                   ],
                 ),
               ),
             ],
 
             SizedBox(height: 32),
-
+            _isLoadingAI
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _titleController.text.isNotEmpty
+                        ? _generateMetadata
+                        : null,
+                    child: Text('Generate Metadata with AI'),
+                  ),
+            SizedBox(height: 16),
             // Submit Button
             SizedBox(
               width: double.infinity,
@@ -530,7 +586,9 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           ),
                           SizedBox(width: 12),
