@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/api_service.dart';
 import 'package:frontend/services/openai_service.dart';
-import '../services/api_service.dart';
 
 class AddExperimentScreen extends StatefulWidget {
+  const AddExperimentScreen({super.key});
+
   @override
   _AddExperimentScreenState createState() => _AddExperimentScreenState();
 }
@@ -26,7 +28,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
-            children: [
+            children: const [
               Icon(Icons.warning, color: Colors.white),
               SizedBox(width: 8),
               Text('Please enter a step instruction'),
@@ -63,7 +65,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
     });
   }
 
-    Future<void> _generateMetadata() async {
+  Future<void> _generateMetadata() async {
     if (_titleController.text.isEmpty) {
       setState(() {
         _error = 'Please enter a title to generate metadata';
@@ -88,30 +90,33 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
     }
   }
 
-
   void _submit() async {
     if (_formKey.currentState!.validate() && _steps.isNotEmpty) {
       setState(() {
         _isSubmitting = true;
+        _error = null;
       });
 
       try {
-        await ApiService.addExperiment({
-          'title': _titleController.text,
-          'description': _descriptionController.text,
-          'subject': _subjectController.text,
-          'difficulty': _difficultyController.text,
+        final experimentData = {
+          'title': _titleController.text.trim(),
+          'description': _descriptionController.text.trim(),
+          'subject': _subjectController.text.trim(),
+          'difficulty': _difficultyController.text.trim(),
           'materials': _materialsController.text
               .split(',')
               .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
               .toList(),
           'steps': _steps,
-        });
+        };
+
+        await ApiService.addExperiment(experimentData);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
-              children: [
+              children: const [
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 8),
                 Text('Experiment added successfully!'),
@@ -126,12 +131,15 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
         );
         Navigator.pop(context);
       } catch (e) {
+        setState(() {
+          _error = e.toString();
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.error, color: Colors.white),
-                SizedBox(width: 8),
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
                 Expanded(child: Text('Failed to add experiment: $e')),
               ],
             ),
@@ -151,7 +159,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
-            children: [
+            children: const [
               Icon(Icons.warning, color: Colors.white),
               SizedBox(width: 8),
               Text('Please add at least one step'),
@@ -174,19 +182,19 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
     String? hint,
   }) {
     return Container(
-      margin: EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Colors.black,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             validator: validator,
@@ -207,13 +215,13 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.black, width: 2),
+                borderSide: const BorderSide(color: Colors.black, width: 2),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.red, width: 2),
+                borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
-              contentPadding: EdgeInsets.symmetric(
+              contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 16,
               ),
@@ -246,16 +254,16 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
         foregroundColor: Colors.black,
         leading: IconButton(
           icon: Container(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.arrow_back, size: 20),
+            child: const Icon(Icons.arrow_back, size: 20),
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
+        title: const Text(
           'Create Experiment',
           style: TextStyle(
             fontSize: 24,
@@ -264,18 +272,18 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1),
+          preferredSize: const Size.fromHeight(1),
           child: Container(height: 1, color: Colors.grey[200]),
         ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           children: [
             // Basic Information Section
             Container(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -283,7 +291,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -299,14 +307,14 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                           color: Colors.black,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.info_outline,
                           color: Colors.white,
                           size: 20,
                         ),
                       ),
-                      SizedBox(width: 12),
-                      Text(
+                      const SizedBox(width: 12),
+                      const Text(
                         'Basic Information',
                         style: TextStyle(
                           fontSize: 20,
@@ -316,7 +324,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   _buildInputField(
                     controller: _titleController,
                     label: 'Experiment Title',
@@ -363,11 +371,11 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
               ),
             ),
 
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Steps Section
             Container(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -375,7 +383,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -391,14 +399,14 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                           color: Colors.black,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.format_list_numbered,
                           color: Colors.white,
                           size: 20,
                         ),
                       ),
-                      SizedBox(width: 12),
-                      Text(
+                      const SizedBox(width: 12),
+                      const Text(
                         'Experiment Steps',
                         style: TextStyle(
                           fontSize: 20,
@@ -408,7 +416,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
                   _buildInputField(
                     controller: _stepInstructionController,
@@ -428,8 +436,8 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _addStep,
-                      icon: Icon(Icons.add, color: Colors.white),
-                      label: Text(
+                      icon: const Icon(Icons.add, color: Colors.white),
+                      label: const Text(
                         'Add Step',
                         style: TextStyle(
                           fontSize: 16,
@@ -439,7 +447,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
-                        padding: EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -453,9 +461,9 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
 
             // Added Steps Display
             if (_steps.isNotEmpty) ...[
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               Container(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -463,7 +471,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -472,97 +480,97 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                   children: [
                     Text(
                       'Added Steps (${_steps.length})',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.black,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ..._steps.asMap().entries.map(
-                      (entry) => Container(
-                        margin: EdgeInsets.only(bottom: 12),
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${entry.value['stepNumber']}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
+                          (entry) => Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
                             ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.value['instruction'],
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  if (entry.value['mediaUrl'] != null) ...[
-                                    SizedBox(height: 4),
-                                    Text(
-                                      'Media: ${entry.value['mediaUrl']}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
+                                  child: Center(
+                                    child: Text(
+                                      '${entry.value['stepNumber']}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                  ],
-                                ],
-                              ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        entry.value['instruction'],
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      if (entry.value['mediaUrl'] != null) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Media: ${entry.value['mediaUrl']}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => _removeStep(entry.key),
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red[400],
+                                  ),
+                                  padding: const EdgeInsets.all(8),
+                                  constraints: const BoxConstraints(),
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              onPressed: () => _removeStep(entry.key),
-                              icon: Icon(
-                                Icons.delete_outline,
-                                color: Colors.red[400],
-                              ),
-                              padding: EdgeInsets.all(8),
-                              constraints: BoxConstraints(),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
                   ],
                 ),
               ),
             ],
 
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             _isLoadingAI
-                ? CircularProgressIndicator()
+                ? const CircularProgressIndicator()
                 : ElevatedButton(
                     onPressed: _titleController.text.isNotEmpty
                         ? _generateMetadata
                         : null,
-                    child: Text('Generate Metadata with AI'),
+                    child: const Text('Generate Metadata with AI'),
                   ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Submit Button
             SizedBox(
               width: double.infinity,
@@ -571,7 +579,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -580,7 +588,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                 child: _isSubmitting
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        children: const [
                           SizedBox(
                             width: 20,
                             height: 20,
@@ -601,7 +609,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                           ),
                         ],
                       )
-                    : Text(
+                    : const Text(
                         'Create Experiment',
                         style: TextStyle(
                           fontSize: 18,
@@ -611,7 +619,13 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
               ),
             ),
 
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
+            if (_error != null)
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),

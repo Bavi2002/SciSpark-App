@@ -1,97 +1,97 @@
 
 import express from "express";
 import Experiment from "../models/Experiment.js";
-import auth from "../middleware/auth.js";
-
+import { auth, authorizeRole } from "../middleware/auth.js";
 const router = express.Router();
 
-// Add new experiment (Teacher only, requires auth)
-router.post("/add", async (req, res) => {
+
+// Get all experiments
+router.get('/', async (req, res) => {
+  try {
+    const experiments = await Experiment.find().select('-steps');
+    res.json(experiments);
+  } catch (error) {
+    console.error('Get experiments error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get teacher-specific experiments
+router.get('/teacher/:id', auth, async (req, res) => {
+  try {
+    const experiments = await Experiment.find({ user: req.params.id }).select('-steps');
+    res.json(experiments);
+  } catch (error) {
+    console.error('Get teacher experiments error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Add experiment
+router.post('/add', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
     const { title, description, subject, difficulty, materials, steps } = req.body;
-
-    // Validate required fields
     if (!title || !description || !subject || !difficulty) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ message: 'All fields are required' });
     }
-
-    console.log("Creating experiment:", req.body);
-
     const experiment = new Experiment({
+      user: req.user.id,
       title,
       description,
       subject,
       difficulty,
       materials: materials || [],
-      steps: steps || []
+      steps: steps || [],
     });
-
-    console.log("Saving experiment:", experiment);
-
     await experiment.save();
-    res.status(201).json({ message: "Experiment added successfully", experiment });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to add experiment" });
+    res.status(201).json(experiment);
+  } catch (error) {
+    console.error('Experiment creation error:', error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
-// Get all experiments
-router.get("/", async (req, res) => {
-  try {
-    const experiments = await Experiment.find().select("-steps"); // Exclude steps for lighter response
-    res.json(experiments);
-    console.log("Fetched experiments:", experiments);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch experiments" });
-  }
-});
-
-// Get single experiment by ID
-router.get("/:id", async (req, res) => {
+// Get single experiment
+router.get('/:id', async (req, res) => {
   try {
     const experiment = await Experiment.findById(req.params.id);
     if (!experiment) {
-      return res.status(404).json({ error: "Experiment not found" });
+      return res.status(404).json({ message: 'Experiment not found' });
     }
     res.json(experiment);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch experiment" });
+  } catch (error) {
+    console.error('Get experiment error:', error.message);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Update experiment (Teacher only, requires auth)
-router.put("/:id", auth, async (req, res) => {
+// Update experiment
+router.put('/:id', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
-    const { title, description, subject, difficulty, materials, steps } = req.body;
-
+    const { title, description, subject, difficulty, materials } = req.body;
     const experiment = await Experiment.findById(req.params.id);
     if (!experiment) {
-      return res.status(404).json({ error: "Experiment not found" });
+      return res.status(404).json({ message: 'Experiment not found' });
     }
-
- 
-
-    // Update fields if provided
-    if (title) experiment.title = title;
-    if (description) experiment.description = description;
-    if (subject) experiment.subject = subject;
-    if (difficulty) experiment.difficulty = difficulty;
-    if (materials) experiment.materials = materials;
-    if (steps) experiment.steps = steps;
-
+    if (experiment.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    experiment.title = title || experiment.title;
+    experiment.description = description || experiment.description;
+    experiment.subject = subject || experiment.subject;
+    experiment.difficulty = difficulty || experiment.difficulty;
+    experiment.materials = materials || experiment.materials;
     await experiment.save();
-    res.json({ message: "Experiment updated successfully", experiment });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to update experiment" });
+    res.json(experiment);
+  } catch (error) {
+    console.error('Update experiment error:', error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
+
 // Delete experiment (Teacher only, requires auth)
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, authorizeRole("teacher"), async (req, res) => {
   try {
     const experiment = await Experiment.findById(req.params.id);
     if (!experiment) {
@@ -108,84 +108,74 @@ router.delete("/:id", auth, async (req, res) => {
 });
 
 // Add a step to an experiment (Teacher only, requires auth)
-router.post("/:id/steps", auth, async (req, res) => {
+router.post('/:id/steps', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
-    const {  stepNumber, instruction ,mediaUrl} = req.body;
-
-    // Validate required fields
-    if (!stepNumber || !mediaUrl || !instruction) {
-      return res.status(400).json({ error: "All fields are required" });
+    const { stepNumber, instruction, mediaUrl } = req.body;
+    if (!stepNumber || !instruction) {
+      return res.status(400).json({ message: 'Step number and instruction are required' });
     }
-
     const experiment = await Experiment.findById(req.params.id);
     if (!experiment) {
-      return res.status(404).json({ error: "Experiment not found" });
+      return res.status(404).json({ message: 'Experiment not found' });
     }
-
-    const step = { stepNumber, instruction, mediaUrl };
-    experiment.steps.push(step);
+    if (experiment.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    experiment.steps.push({ stepNumber, instruction, mediaUrl });
     await experiment.save();
-
-    res.json({ message: "Step added successfully", experiment });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to add step" });
+    res.status(201).json(experiment);
+  } catch (error) {
+    console.error('Add step error:', error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
 // Update a specific step in an experiment (Teacher only, requires auth)
-router.put("/:id/steps/:stepIndex", auth, async (req, res) => {
+router.put('/:id/steps/:stepIndex', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
-      const {  stepNumber, instruction ,mediaUrl} = req.body;
-    const { id, stepIndex } = req.params;
-
-    const experiment = await Experiment.findById(id);
+    const { stepNumber, instruction, mediaUrl } = req.body;
+    if (!stepNumber || !instruction) {
+      return res.status(400).json({ message: 'Step number and instruction are required' });
+    }
+    const experiment = await Experiment.findById(req.params.id);
     if (!experiment) {
-      return res.status(404).json({ error: "Experiment not found" });
+      return res.status(404).json({ message: 'Experiment not found' });
     }
-
-
-    if (stepIndex >= experiment.steps.length || stepIndex < 0) {
-      return res.status(400).json({ error: "Invalid step index" });
+    if (experiment.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized' });
     }
-
-    // Update step fields if provided
-    if (stepNumber) experiment.steps[stepIndex].stepNumber = stepNumber;
-    if (instruction) experiment.steps[stepIndex].instruction = instruction;
-    if (mediaUrl) experiment.steps[stepIndex].mediaUrl = mediaUrl;
-
+    const step = experiment.steps[req.params.stepIndex];
+    if (!step) {
+      return res.status(404).json({ message: 'Step not found' });
+    }
+    step.stepNumber = stepNumber;
+    step.instruction = instruction;
+    step.mediaUrl = mediaUrl || step.mediaUrl;
     await experiment.save();
-    res.json({ message: "Step updated successfully", experiment });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to update step" });
+    res.json(experiment);
+  } catch (error) {
+    console.error('Update step error:', error.message);
+    res.status(400).json({ message: error.message });
   }
 });
 
 // Delete a specific step in an experiment (Teacher only, requires auth)
-router.delete("/:id/steps/:stepIndex", auth, async (req, res) => {
+// Delete step
+router.delete('/:id/steps/:stepIndex', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
-    const { id, stepIndex } = req.params;
-
-    const experiment = await Experiment.findById(id);
+    const experiment = await Experiment.findById(req.params.id);
     if (!experiment) {
-      return res.status(404).json({ error: "Experiment not found" });
+      return res.status(404).json({ message: 'Experiment not found' });
     }
-
-
-
-    if (stepIndex >= experiment.steps.length || stepIndex < 0) {
-      return res.status(400).json({ error: "Invalid step index" });
+    if (experiment.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized' });
     }
-
-    experiment.steps.splice(stepIndex, 1); // Remove step at index
+    experiment.steps.splice(parseInt(req.params.stepIndex), 1);
     await experiment.save();
-
-    res.json({ message: "Step deleted successfully", experiment });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete step" });
+    res.json(experiment);
+  } catch (error) {
+    console.error('Delete step error:', error.message);
+    res.status(400).json({ message: error.message });
   }
 });
-
 export default router;

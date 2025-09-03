@@ -8,6 +8,7 @@ const stepSchema = new mongoose.Schema({
 
 const experimentSchema = new mongoose.Schema({
   title: String,
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher" },
   description: String,
   subject: String,
   difficulty: String,
