@@ -5,6 +5,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:frontend/components/ai_assistant/ai_assistant_button.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/screens/edit_experiment_screen.dart';
 import 'package:video_player/video_player.dart';
 
 class ExperimentDetailScreen extends StatefulWidget {
@@ -52,7 +53,6 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
     final response = await ApiService.getExperimentById(widget.experimentId);
     setState(() {
       _experiment = response;
-      // Initialize video controllers for steps with videoUrl
       for (var step in _experiment!['steps']) {
         if (step['mediaUrl'] != null && step['mediaUrl'].endsWith('.mp4')) {
           final controller = VideoPlayerController.network(step['mediaUrl']);
@@ -60,8 +60,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
             videoPlayerController: controller,
             autoPlay: false,
             looping: false,
-            errorBuilder: (context, errorMessage) =>
-                Center(child: Text('Video error: $errorMessage')),
+            errorBuilder: (context, errorMessage) => Center(child: Text('Video error: $errorMessage')),
           );
         }
       }
@@ -108,8 +107,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
         if (!_completedSteps.contains(stepNumber)) {
           _completedSteps.add(stepNumber);
         }
-        if (_experiment != null &&
-            _completedSteps.length == _experiment!['steps'].length) {
+        if (_experiment != null && _completedSteps.length == _experiment!['steps'].length) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Experiment Completed! Badge Earned.'),
@@ -119,6 +117,44 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
         }
         _error = null;
       });
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteExperiment() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Experiment'),
+        content: const Text('Are you sure you want to delete this experiment? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await ApiService.deleteExperiment(widget.experimentId);
+      Navigator.pop(context); // Return to ExperimentListScreen
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Experiment deleted successfully.'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
@@ -141,13 +177,11 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
 
   Map<String, dynamic>? get currentStep {
     if (_experiment == null || _experiment!['steps'] == null) return null;
-    // Find the first incomplete step, or the first step if all are completed
     for (var step in _experiment!['steps']) {
       if (!_completedSteps.contains(step['stepNumber'])) {
         return step;
       }
     }
-    // If all steps completed, return the last step
     return _experiment!['steps'].isNotEmpty ? _experiment!['steps'].last : null;
   }
 
@@ -170,12 +204,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
     if (_error != null) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.title)),
-        body: Center(
-          child: Text(
-            'Error: $_error',
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
+        body: Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red))),
       );
     }
 
@@ -193,6 +222,40 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
+        actions: [
+          FutureBuilder<String?>(
+            future: AuthService.getRole(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox.shrink();
+              }
+              if (snapshot.data != 'teacher') {
+                return const SizedBox.shrink();
+              }
+              return Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    tooltip: 'Edit Experiment',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditExperimentScreen(experiment: _experiment!),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    tooltip: 'Delete Experiment',
+                    onPressed: _deleteExperiment,
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -210,18 +273,11 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Materials:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              ..._experiment!['materials']
-                  .map<Widget>(
-                    (mat) => Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Text('- $mat'),
-                    ),
-                  )
-                  .toList(),
+              const Text('Materials:', style: TextStyle(fontWeight: FontWeight.bold)),
+              ..._experiment!['materials'].map<Widget>((mat) => Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text('- $mat'),
+                  )).toList(),
               const SizedBox(height: 16),
               FutureBuilder<String?>(
                 future: AuthService.getRole(),
@@ -230,7 +286,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.data != 'student') {
-                    return const SizedBox.shrink(); // Hide start button for non-students
+                    return const SizedBox.shrink();
                   }
                   return !_isStarted
                       ? SizedBox(
@@ -243,46 +299,33 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Steps:',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                            const Text('Steps:', style: TextStyle(fontWeight: FontWeight.bold)),
                             ..._experiment!['steps'].map<Widget>((step) {
                               final stepNumber = step['stepNumber'];
-                              final isCompleted = _completedSteps.contains(
-                                stepNumber,
-                              );
+                              final isCompleted = _completedSteps.contains(stepNumber);
                               return Card(
                                 margin: const EdgeInsets.symmetric(vertical: 8),
                                 elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 child: Padding(
                                   padding: const EdgeInsets.all(12.0),
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
                                           Expanded(
                                             child: Text(
                                               'Step $stepNumber: ${step['instruction']}',
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                              ),
+                                              style: const TextStyle(fontSize: 16),
                                             ),
                                           ),
                                           IconButton(
                                             icon: Icon(
-                                              _isSpeaking
-                                                  ? Icons.stop
-                                                  : Icons.volume_up,
+                                              _isSpeaking ? Icons.stop : Icons.volume_up,
                                               color: Colors.grey[600],
                                             ),
-                                            onPressed: () =>
-                                                _speakStep(step['instruction']),
+                                            onPressed: () => _speakStep(step['instruction']),
                                           ),
                                         ],
                                       ),
@@ -290,31 +333,21 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                                         step['mediaUrl'].endsWith('.mp4')
                                             ? Container(
                                                 height: 200,
-                                                margin: const EdgeInsets.only(
-                                                  top: 8,
-                                                ),
-                                                child: Chewie(
-                                                  controller:
-                                                      _videoControllers[stepNumber]!,
-                                                ),
+                                                margin: const EdgeInsets.only(top: 8),
+                                                child: Chewie(controller: _videoControllers[stepNumber]!),
                                               )
                                             : CachedNetworkImage(
                                                 imageUrl: step['mediaUrl'],
                                                 height: 200,
                                                 fit: BoxFit.cover,
-                                                errorWidget:
-                                                    (context, url, error) =>
-                                                        const Icon(Icons.error),
+                                                errorWidget: (context, url, error) => const Icon(Icons.error),
                                               ),
                                       if (!isCompleted)
                                         SizedBox(
                                           width: double.infinity,
                                           child: ElevatedButton(
-                                            onPressed: () =>
-                                                _markStepCompleted(stepNumber),
-                                            child: const Text(
-                                              'Mark as Completed',
-                                            ),
+                                            onPressed: () => _markStepCompleted(stepNumber),
+                                            child: const Text('Mark as Completed'),
                                           ),
                                         )
                                       else
@@ -322,10 +355,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                                           padding: EdgeInsets.only(top: 8),
                                           child: Text(
                                             'Completed',
-                                            style: TextStyle(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                     ],
@@ -340,10 +370,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
+                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
                 ),
             ],
           ),
@@ -352,8 +379,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
       floatingActionButton: currentStep != null
           ? AIAssistantButton(
               experimentId: widget.experimentId,
-              currentStepContext:
-                  'Step ${currentStep!['stepNumber']}: ${currentStep!['instruction']}',
+              currentStepContext: 'Step ${currentStep!['stepNumber']}: ${currentStep!['instruction']}',
             )
           : null,
     );

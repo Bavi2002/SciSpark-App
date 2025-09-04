@@ -134,7 +134,8 @@ router.post('/:id/steps', auth, authorizeRole(['teacher']), async (req, res) => 
 router.put('/:id/steps/:stepIndex', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
     const { stepNumber, instruction, mediaUrl } = req.body;
-    if (!stepNumber || !instruction) {
+    console.log(req.body);
+    if (!instruction) {
       return res.status(400).json({ message: 'Step number and instruction are required' });
     }
     const experiment = await Experiment.findById(req.params.id);
