@@ -1,0 +1,16 @@
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  password: { type: String, required: true },
+  email: { type: String, required: true },
+  role: { type: String, enum: ['parent', 'admin'], required: true },
+  progress: [{
+    experimentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Experiment' },
+    status: { type: String, enum: ['in-progress', 'completed'], default: 'in-progress' }
+  }]
+});
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
