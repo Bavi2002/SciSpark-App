@@ -1,15 +1,29 @@
 const express = require('express');
-const User = require('../models/User');
-const authMiddleware = require('../middleware/authMiddleware');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User'); // Your User model
 const router = express.Router();
 
-// Get parent dashboard data (user's progress)
-router.get('/dashboard', authMiddleware, async (req, res) => {
+// GET Parent Dashboard Data
+router.get('/dashboard', async (req, res) => {
+  const token = req.header('Authorization').replace('Bearer ', '');
+
   try {
-    const user = await User.findById(req.user._id).populate('progress.experimentId');
-    res.json(user.progress);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId)
+      .populate('progress.experimentId'); // Include experiment details
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Format the response
+    const dashboardData = user.progress.map(p => ({
+      experimentName: p.experimentId.title,
+      status: p.status,
+      badges: p.badgesEarned || [],
+    }));
+
+    res.json(dashboardData);
+  } catch (err) {
+    res.status(401).json({ message: 'Not authorized' });
   }
 });
 

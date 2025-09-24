@@ -37,6 +37,7 @@ dependencies:
 
   # Add the http package to your dependencies
   http: ^0.13.3
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
