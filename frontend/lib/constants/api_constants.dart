@@ -1,1 +1,1 @@
-const String BASE_URL = 'https://intent-hideously-pika.ngrok-free.app'; // Replace with your backend URL
+const String BASE_URL = 'https://vx20q0ls-5000.asse.devtunnels.ms'; // Replace with your backend URL
