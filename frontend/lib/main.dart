@@ -95,12 +95,14 @@ class MyApp extends StatelessWidget {
               },
             );
           }
-          return LoginScreen(onLogin: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MyApp()),
-            );
-          });
+          return LoginScreen(
+            onLogin: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MyApp()),
+              );
+            },
+          );
         },
       ),
     );
@@ -154,36 +156,32 @@ class StudentDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ExperimentListScreen(),
-                ),
-              ),
+              onPressed:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ExperimentListScreen(),
+                    ),
+                  ),
               icon: const Icon(Icons.science, color: Colors.white),
               label: const Text(
                 'View All Experiments',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const StudentProgressScreen(),
-                ),
-              ),
+              onPressed:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StudentProgressScreen(),
+                    ),
+                  ),
               icon: const Icon(Icons.star, color: Colors.white),
               label: const Text(
                 'View Progress & Achievements',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -246,16 +244,19 @@ class TeacherDashboard extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ExperimentListScreen(
-                        showTeacherExperiments: true,
-                        teacherId: userId,
-                      ),
+                      builder:
+                          (context) => ExperimentListScreen(
+                            showTeacherExperiments: true,
+                            teacherId: userId,
+                          ),
                     ),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Failed to load user ID. Please log in again.'),
+                      content: Text(
+                        'Failed to load user ID. Please log in again.',
+                      ),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -264,27 +265,22 @@ class TeacherDashboard extends StatelessWidget {
               icon: const Icon(Icons.science, color: Colors.white),
               label: const Text(
                 'View My Experiments',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ExperimentListScreen(),
-                ),
-              ),
+              onPressed:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ExperimentListScreen(),
+                    ),
+                  ),
               icon: const Icon(Icons.list_alt, color: Colors.white),
               label: const Text(
                 'View All Experiments',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
             const SizedBox(height: 16),
@@ -294,7 +290,9 @@ class TeacherDashboard extends StatelessWidget {
                 if (token == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Please log in as a teacher to add experiments.'),
+                      content: Text(
+                        'Please log in as a teacher to add experiments.',
+                      ),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -310,10 +308,7 @@ class TeacherDashboard extends StatelessWidget {
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(
                 'Add New Experiment',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ],
