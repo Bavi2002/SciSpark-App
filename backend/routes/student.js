@@ -71,7 +71,7 @@ router.post('/progress/step', auth, authorizeRole(['student']), async (req, res)
   }
 });
 
-// Get student progress
+// Read student progress
 router.get('/progress', auth, authorizeRole(['student']), async (req, res) => {
   try {
     const progress = await Progress.find({ studentId: req.user.id })
@@ -83,7 +83,7 @@ router.get('/progress', auth, authorizeRole(['student']), async (req, res) => {
   }
 });
 
-// Get student achievements
+// Read student achievements
 router.get('/achievements', auth, authorizeRole(['student']), async (req, res) => {
   try {
     const achievements = await Achievement.find({ studentId: req.user.id })
