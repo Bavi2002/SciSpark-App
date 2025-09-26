@@ -52,6 +52,7 @@ router.post('/register/teacher', async (req, res) => {
 // Login (for both student and teacher)
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  console.log(email, password);
   try {
     let user = await Student.findOne({ email }) || await Teacher.findOne({ email });
     if (!user) {
