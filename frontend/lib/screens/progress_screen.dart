@@ -51,7 +51,7 @@ class _StudentProgressScreenState extends State<StudentProgressScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('My Progress & Achievements'),
+        title: const Text('Parent Dashboard'),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
