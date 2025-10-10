@@ -1,12 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:frontend/components/ai_assistant/ai_assistant_button.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/edit_experiment_screen.dart';
-import 'package:video_player/video_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class ExperimentDetailScreen extends StatefulWidget {
   final String experimentId;
@@ -28,9 +27,10 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   bool _isStarted = false;
   bool _isLoading = true;
   String? _error;
+  String? _userRole;
   FlutterTts _tts = FlutterTts();
   bool _isSpeaking = false;
-  Map<int, ChewieController> _videoControllers = {};
+  Map<int, YoutubePlayerController> _videoControllers = {};
 
   @override
   void initState() {
@@ -39,44 +39,72 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   }
 
   Future<void> _initialize() async {
+    if (!mounted) return;
+    debugPrint('Initializing ExperimentDetailScreen');
     setState(() => _isLoading = true);
     try {
-      await Future.wait([_fetchExperiment(), _checkProgress()]);
+      await Future.wait([
+        _fetchUserRole(),
+        _fetchExperiment(),
+        _checkProgress(),
+      ]);
     } catch (e) {
-      setState(() => _error = e.toString());
+      debugPrint('Initialize error: $e');
+      if (mounted) {
+        setState(() => _error = e.toString());
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _fetchUserRole() async {
+    final role = await AuthService.getRole();
+    if (mounted) {
+      setState(() => _userRole = role);
     }
   }
 
   Future<void> _fetchExperiment() async {
+    debugPrint('Fetching experiment: ${widget.experimentId}');
     final response = await ApiService.getExperimentById(widget.experimentId);
-    setState(() {
-      _experiment = response;
-      for (var step in _experiment!['steps']) {
-        if (step['mediaUrl'] != null && step['mediaUrl'].endsWith('.mp4')) {
-          final controller = VideoPlayerController.network(step['mediaUrl']);
-          _videoControllers[step['stepNumber']] = ChewieController(
-            videoPlayerController: controller,
-            autoPlay: false,
-            looping: false,
-            errorBuilder: (context, errorMessage) => Center(child: Text('Video error: $errorMessage')),
-          );
+    if (mounted) {
+      setState(() {
+        _experiment = response;
+        for (var step in _experiment!['steps']) {
+          if (step['mediaUrl'] != null) {
+            final videoId = YoutubePlayer.convertUrlToId(step['mediaUrl']);
+            if (videoId != null) {
+              _videoControllers[step['stepNumber']] = YoutubePlayerController(
+                initialVideoId: videoId,
+                flags: const YoutubePlayerFlags(
+                  autoPlay: false,
+                  mute: false,
+                  disableDragSeek: false,
+                  loop: false,
+                  enableCaption: false,
+                ),
+              );
+            }
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   Future<void> _checkProgress() async {
-    final role = await AuthService.getRole();
-    if (role != 'student') return; // Progress is only for students
+    final role = _userRole ?? await AuthService.getRole();
+    if (role != 'student') return;
 
+    debugPrint('Checking progress for experiment: ${widget.experimentId}');
     final progressList = await ApiService.getStudentProgress();
     final progress = progressList.firstWhere(
       (p) => p['experimentId']['_id'] == widget.experimentId,
       orElse: () => null,
     );
-    if (progress != null) {
+    if (progress != null && mounted) {
       setState(() {
         _isStarted = true;
         _completedSteps = List<int>.from(progress['completedSteps']);
@@ -85,46 +113,65 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   }
 
   Future<void> _startExperiment() async {
+    if (!mounted) return;
+    debugPrint('Starting experiment: ${widget.experimentId}');
     setState(() => _isLoading = true);
     try {
       await ApiService.startExperiment(widget.experimentId);
-      setState(() {
-        _isStarted = true;
-        _error = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isStarted = true;
+          _error = null;
+        });
+      }
     } catch (e) {
-      setState(() => _error = e.toString());
+      debugPrint('Start experiment error: $e');
+      if (mounted) {
+        setState(() => _error = e.toString());
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _markStepCompleted(int stepNumber) async {
+    if (!mounted) return;
+    debugPrint('Marking step $stepNumber completed');
     setState(() => _isLoading = true);
     try {
       await ApiService.markStepCompleted(widget.experimentId, stepNumber);
-      setState(() {
-        if (!_completedSteps.contains(stepNumber)) {
-          _completedSteps.add(stepNumber);
-        }
-        if (_experiment != null && _completedSteps.length == _experiment!['steps'].length) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Experiment Completed! Badge Earned.'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-        _error = null;
-      });
+      if (mounted) {
+        setState(() {
+          if (!_completedSteps.contains(stepNumber)) {
+            _completedSteps.add(stepNumber);
+          }
+          if (_experiment != null && _completedSteps.length == _experiment!['steps'].length) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Experiment Completed! Badge Earned.'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+          _error = null;
+        });
+      }
     } catch (e) {
-      setState(() => _error = e.toString());
+      debugPrint('Mark step completed error: $e');
+      if (mounted) {
+        setState(() => _error = e.toString());
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _deleteExperiment() async {
+    if (!mounted) return;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -143,34 +190,51 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
       ),
     );
 
-    if (confirm != true) return;
+    if (confirm != true || !mounted) return;
 
+    debugPrint('Deleting experiment: ${widget.experimentId}');
     setState(() => _isLoading = true);
     try {
       await ApiService.deleteExperiment(widget.experimentId);
-      Navigator.pop(context); // Return to ExperimentListScreen
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Experiment deleted successfully.'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        Navigator.pop(context); // Return to ExperimentListScreen
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Experiment deleted successfully.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      setState(() => _error = e.toString());
+      debugPrint('Delete experiment error: $e');
+      if (mounted) {
+        setState(() => _error = e.toString());
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _speakStep(String text) async {
+    if (!mounted) return;
+    debugPrint('Speaking step: $text');
     if (_isSpeaking) {
       await _tts.stop();
-      setState(() => _isSpeaking = false);
+      if (mounted) {
+        setState(() => _isSpeaking = false);
+      }
     } else {
       await _tts.speak(text);
-      setState(() => _isSpeaking = true);
+      if (mounted) {
+        setState(() => _isSpeaking = true);
+      }
       _tts.setCompletionHandler(() {
-        setState(() => _isSpeaking = false);
+        debugPrint('TTS completed');
+        if (mounted) {
+          setState(() => _isSpeaking = false);
+        }
       });
     }
   }
@@ -187,6 +251,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
 
   @override
   void dispose() {
+    debugPrint('Disposing ExperimentDetailScreen');
     _tts.stop();
     _videoControllers.forEach((_, controller) => controller.dispose());
     super.dispose();
@@ -194,7 +259,8 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    debugPrint('Building ExperimentDetailScreen');
+    if (_isLoading || _userRole == null) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.title)),
         body: const Center(child: CircularProgressIndicator()),
@@ -215,6 +281,8 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
       );
     }
 
+    final isStudent = _userRole == 'student';
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -223,38 +291,25 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         actions: [
-          FutureBuilder<String?>(
-            future: AuthService.getRole(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SizedBox.shrink();
-              }
-              if (snapshot.data != 'teacher') {
-                return const SizedBox.shrink();
-              }
-              return Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    tooltip: 'Edit Experiment',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditExperimentScreen(experiment: _experiment!),
-                        ),
-                      );
-                    },
+          if (_userRole == 'teacher') ...[
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: 'Edit Experiment',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditExperimentScreen(experiment: _experiment!),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    tooltip: 'Delete Experiment',
-                    onPressed: _deleteExperiment,
-                  ),
-                ],
-              );
-            },
-          ),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              tooltip: 'Delete Experiment',
+              onPressed: _deleteExperiment,
+            ),
+          ],
         ],
       ),
       body: SingleChildScrollView(
@@ -263,6 +318,28 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (_experiment!['thumbnail'] != null &&
+                  RegExp(r'\.(jpg|jpeg|png)$', caseSensitive: false).hasMatch(_experiment!['thumbnail']))
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: _experiment!['thumbnail'],
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => Container(
+                      height: 200,
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: Text(
+                          'Failed to load thumbnail',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
               Text(
                 _experiment!['description'],
                 style: const TextStyle(fontSize: 16),
@@ -279,94 +356,118 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                     child: Text('- $mat'),
                   )).toList(),
               const SizedBox(height: 16),
-              FutureBuilder<String?>(
-                future: AuthService.getRole(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.data != 'student') {
-                    return const SizedBox.shrink();
-                  }
-                  return !_isStarted
-                      ? SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _startExperiment,
-                            child: const Text('Start Experiment'),
-                          ),
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+              if (isStudent && !_isStarted)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _startExperiment,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Start Experiment',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              const Text('Steps:', style: TextStyle(fontWeight: FontWeight.bold)),
+              ..._experiment!['steps'].map<Widget>((step) {
+                final stepNumber = step['stepNumber'];
+                final isCompleted = _completedSteps.contains(stepNumber);
+                final videoId = step['mediaUrl'] != null ? YoutubePlayer.convertUrlToId(step['mediaUrl']) : null;
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            const Text('Steps:', style: TextStyle(fontWeight: FontWeight.bold)),
-                            ..._experiment!['steps'].map<Widget>((step) {
-                              final stepNumber = step['stepNumber'];
-                              final isCompleted = _completedSteps.contains(stepNumber);
-                              return Card(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              'Step $stepNumber: ${step['instruction']}',
-                                              style: const TextStyle(fontSize: 16),
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: Icon(
-                                              _isSpeaking ? Icons.stop : Icons.volume_up,
-                                              color: Colors.grey[600],
-                                            ),
-                                            onPressed: () => _speakStep(step['instruction']),
-                                          ),
-                                        ],
-                                      ),
-                                      if (step['mediaUrl'] != null)
-                                        step['mediaUrl'].endsWith('.mp4')
-                                            ? Container(
-                                                height: 200,
-                                                margin: const EdgeInsets.only(top: 8),
-                                                child: Chewie(controller: _videoControllers[stepNumber]!),
-                                              )
-                                            : CachedNetworkImage(
-                                                imageUrl: step['mediaUrl'],
-                                                height: 200,
-                                                fit: BoxFit.cover,
-                                                errorWidget: (context, url, error) => const Icon(Icons.error),
-                                              ),
-                                      if (!isCompleted)
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () => _markStepCompleted(stepNumber),
-                                            child: const Text('Mark as Completed'),
-                                          ),
-                                        )
-                                      else
-                                        const Padding(
-                                          padding: EdgeInsets.only(top: 8),
-                                          child: Text(
-                                            'Completed',
-                                            style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                            Expanded(
+                              child: Text(
+                                'Step $stepNumber: ${step['instruction']}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                _isSpeaking ? Icons.stop : Icons.volume_up,
+                                color: Colors.grey[600],
+                              ),
+                              onPressed: () => _speakStep(step['instruction']),
+                            ),
                           ],
-                        );
-                },
-              ),
+                        ),
+                        if (step['mediaUrl'] != null && videoId != null)
+                          Container(
+                            height: 200,
+                            margin: const EdgeInsets.only(top: 8),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: YoutubePlayer(
+                                controller: _videoControllers[stepNumber]!,
+                                showVideoProgressIndicator: true,
+                                progressIndicatorColor: Colors.black,
+                                progressColors: const ProgressBarColors(
+                                  playedColor: Colors.black,
+                                  handleColor: Colors.black45,
+                                ),
+                              ),
+                            ),
+                          )
+                        else if (step['mediaUrl'] != null)
+                          Container(
+                            height: 200,
+                            margin: const EdgeInsets.only(top: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: Icon(Icons.videocam_off, color: Colors.grey, size: 48),
+                            ),
+                          ),
+                        if (isStudent && _isStarted && !isCompleted)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => _markStepCompleted(stepNumber),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Mark as Completed',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          )
+                        else if (isStudent && isCompleted)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 8),
+                            child: Text(
+                              'Completed',
+                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 16),

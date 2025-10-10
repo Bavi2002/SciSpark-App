@@ -293,19 +293,46 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                         padding: const EdgeInsets.all(20),
                         child: Row(
                           children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.science,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
+                            // Thumbnail or fallback icon
+                            experiments[i].thumbnail != null &&
+                                    experiments[i].thumbnail!.isNotEmpty &&
+                                    RegExp(r'\.(jpg|jpeg|png)$', caseSensitive: false)
+                                        .hasMatch(experiments[i].thumbnail!)
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      experiments[i].thumbnail!,
+                                      width: 48,
+                                      height: 48,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        width: 48,
+                                        height: 48,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: const Icon(
+                                          Icons.science,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.science,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(

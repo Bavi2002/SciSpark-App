@@ -30,10 +30,31 @@ router.get('/teacher/:id', auth, async (req, res) => {
 // Add experiment
 router.post('/add', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
-    const { title, description, subject, difficulty, materials, steps } = req.body;
+    const { title, description, subject, difficulty, materials, steps, thumbnail } = req.body;
+    console.log(req.body);
+
+    // Validate required fields
     if (!title || !description || !subject || !difficulty) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ message: 'Title, description, subject, and difficulty are required' });
     }
+
+    // Validate thumbnail (optional; must be .jpg, .jpeg, or .png if provided)
+    if (thumbnail && !/\.(jpg|jpeg|png)$/i.test(thumbnail)) {
+      return res.status(400).json({ message: 'Thumbnail must be a valid image URL (.jpg, .jpeg, .png)' });
+    }
+
+    // Validate steps (optional; each mediaUrl must be a valid YouTube URL if provided)
+    if (steps && Array.isArray(steps)) {
+      for (const step of steps) {
+        if (!step.stepNumber || !step.instruction) {
+          return res.status(400).json({ message: 'Each step must have a stepNumber and instruction' });
+        }
+        if (step.mediaUrl && !/^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}($|\?.*)/.test(step.mediaUrl)) {
+          return res.status(400).json({ message: 'Step mediaUrl must be a valid YouTube URL' });
+        }
+      }
+    }
+
     const experiment = new Experiment({
       user: req.user.id,
       title,
@@ -42,7 +63,10 @@ router.post('/add', auth, authorizeRole(['teacher']), async (req, res) => {
       difficulty,
       materials: materials || [],
       steps: steps || [],
+      thumbnail: thumbnail || null,
+      createdAt: new Date(),
     });
+
     await experiment.save();
     res.status(201).json(experiment);
   } catch (error) {
@@ -50,6 +74,7 @@ router.post('/add', auth, authorizeRole(['teacher']), async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
 
 // Get single experiment
 router.get('/:id', async (req, res) => {

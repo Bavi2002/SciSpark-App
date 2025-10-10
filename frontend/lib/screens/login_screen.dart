@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/services/auth_service.dart';
+import 'package:retry/retry.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLogin;
@@ -18,17 +21,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isRegister = false;
-  String? _error;
   String _selectedRole = 'student'; // Default role
   bool _isSubmitting = false;
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isSubmitting = true;
-      _error = null;
-    });
+    setState(() => _isSubmitting = true);
 
     try {
       final body = {
@@ -39,33 +38,92 @@ class _LoginScreenState extends State<LoginScreen> {
       final endpoint = _isRegister
           ? '/api/auth/register/$_selectedRole'
           : '/api/auth/login';
-      final response = await ApiService.request(
-        endpoint,
-        'POST',
-        body: body,
-        authRequired: false,
+
+      // Retry up to 3 times for transient network errors
+      final response = await retry(
+        () => ApiService.request(
+          endpoint,
+          'POST',
+          body: body,
+          authRequired: false,
+        ),
+        maxAttempts: 3,
+        delayFactor: const Duration(seconds: 1),
+        retryIf: (e) => e is SocketException || e is TimeoutException,
       );
 
+      // Log response for debugging
+      debugPrint('API Response: Status ${response.statusCode}, Body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body) as Map<String, dynamic>?;
+        if (data == null || data['token'] == null || data['user'] == null) {
+          _showError('Invalid server response: Missing token or user data');
+          return;
+        }
+        final user = data['user'] as Map<String, dynamic>?;
+        if (user == null || user['id'] == null || user['role'] == null) {
+          _showError('Invalid server response: Missing user id or role');
+          return;
+        }
         await AuthService.saveTokenAndRole(
-          data['token'],
-          data['user']['role'],
-          userId: data['user']['id'].toString(),
+          data['token'] as String,
+          user['role'] as String,
+          userId: user['id'].toString(),
         );
         widget.onLogin();
       } else {
-        setState(() {
-          _error = jsonDecode(response.body)['message'] ?? 'Request failed';
-          _isSubmitting = false;
-        });
+        Map<String, dynamic>? errorData;
+        try {
+          errorData = response.body.isNotEmpty ? jsonDecode(response.body) as Map<String, dynamic>? : null;
+        } catch (e) {
+          debugPrint('Failed to parse error response: $e, Body: ${response.body}');
+          _showError('Invalid server response');
+          return;
+        }
+        final errorMessage = errorData?['message']?.toString() ?? 'Request failed';
+        // Map backend messages for user clarity
+        final displayMessage = errorMessage == 'Invalid credentials'
+            ? 'Invalid email or password'
+            : errorMessage == 'No user found'
+                ? 'No account found with this email'
+                : errorMessage == 'Student already exists' || errorMessage == 'Teacher already exists'
+                    ? 'Email already registered'
+                    : errorMessage;
+        _showError(displayMessage);
+        debugPrint('API Error: $displayMessage, Status: ${response.statusCode}');
       }
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isSubmitting = false;
-      });
+    } on SocketException catch (e) {
+      _showError('Network error: Please check your internet connection');
+      debugPrint('Network Error: $e');
+    } on TimeoutException catch (e) {
+      _showError('Request timed out: Please try again');
+      debugPrint('Timeout Error: $e');
+    } on FormatException catch (e) {
+      _showError('Invalid server response');
+      debugPrint('Format Error: $e, Response Body: ${e.source}');
+    } catch (e, stackTrace) {
+      _showError('An unexpected error occurred');
+      debugPrint('Unexpected Error: $e\nStackTrace: $stackTrace');
+    } finally {
+      setState(() => _isSubmitting = false);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: Colors.white,
+          onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+        ),
+      ),
+    );
   }
 
   Widget _buildInputField({
@@ -202,6 +260,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (_isRegister)
                     Container(
                       margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: DropdownButtonFormField<String>(
                         value: _selectedRole,
                         onChanged: (String? newValue) {
@@ -219,21 +281,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           labelText: 'Role',
                           prefixIcon: Icon(Icons.group, color: Colors.grey[600]),
                           filled: true,
-                          fillColor: Colors.grey[50],
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(color: Colors.grey[300]!),
                           ),
                         ),
-                      ),
-                    ),
-                  if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Text(
-                        _error!,
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
+                        dropdownColor: Colors.white,
                       ),
                     ),
                   SizedBox(
@@ -262,9 +316,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => setState(() => _isRegister = !_isRegister),
-                    child: Text(
-                      _isRegister ? 'Already have an account? Login' : 'Need an account? Register',
-                      style: const TextStyle(color: Colors.black),
+                    child: Text.rich(
+                      TextSpan(
+                        text: _isRegister ? 'Already have an account? ' : 'Need an account? ',
+                        style: const TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: _isRegister ? 'Login' : 'Register',
+                            style: TextStyle(
+                              color: _isRegister ? Colors.blue : Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],

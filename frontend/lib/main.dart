@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/parent_dashboard_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/chat_provider.dart';
 import 'package:frontend/screens/experiment_list_screen.dart';
@@ -182,6 +183,23 @@ class StudentDashboard extends StatelessWidget {
               label: const Text(
                 'View Progress & Achievements',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+                        const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ParentDashboardScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.star, color: Colors.white),
+              label: const Text(
+                'Parent Dashboard',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

@@ -6,7 +6,7 @@ import 'package:frontend/services/auth_service.dart';
 
 class ApiService {
 
-  static Future<Map<String, dynamic>> askQuestion(
+ static Future<Map<String, dynamic>> askQuestion(
     String experimentId,
     String question,
   ) async {
@@ -20,10 +20,15 @@ class ApiService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception(jsonDecode(response.body)['error'] ?? 'Failed to get AI response: ${response.statusCode}');
+      try {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Failed to get AI response: ${response.statusCode}');
+      } catch (e) {
+        throw Exception('Invalid response format: ${response.body}');
+      }
     }
   }
-  
+
   static Future<http.Response> request(
     String endpoint,
     String method, {
@@ -73,18 +78,7 @@ class ApiService {
       throw Exception('Session expired. Please login again.');
     }
 
-    if (response.statusCode >= 400) {
-      if (response.body.startsWith('<!')) {
-        throw Exception('Received HTML response instead of JSON. Check backend URL or endpoint: $endpoint');
-      }
-      try {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['message'] ?? 'Request failed with status ${response.statusCode}');
-      } catch (e) {
-        throw Exception('Invalid response format: ${response.body}');
-      }
-    }
-
+    // Return response for all status codes, letting caller handle errors
     return response;
   }
 
