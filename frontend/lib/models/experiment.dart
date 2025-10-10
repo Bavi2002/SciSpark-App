@@ -7,6 +7,7 @@ class Experiment {
   final String difficulty;
   final List<String> materials;
   final List<Step> steps;
+  final String? thumbnail; // Added thumbnail field
   final DateTime createdAt;
 
   Experiment({
@@ -18,6 +19,7 @@ class Experiment {
     required this.difficulty,
     required this.materials,
     required this.steps,
+    this.thumbnail, // Optional thumbnail
     required this.createdAt,
   });
 
@@ -34,6 +36,7 @@ class Experiment {
               ?.map((step) => Step.fromJson(step as Map<String, dynamic>))
               .toList() ??
           [],
+      thumbnail: json['thumbnail'], // Parse thumbnail
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
     );
   }
@@ -48,6 +51,7 @@ class Experiment {
       'difficulty': difficulty,
       'materials': materials,
       'steps': steps.map((step) => step.toJson()).toList(),
+      'thumbnail': thumbnail, // Include thumbnail
       'createdAt': createdAt.toIso8601String(),
     };
   }

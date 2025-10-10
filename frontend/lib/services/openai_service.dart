@@ -20,7 +20,7 @@ class OpenAIService {
             {
               'role': 'user',
               'content':
-                  'Generate metadata for a science experiment titled "$title". Provide a description (50-100 words), subject area (e.g., Chemistry, Physics), difficulty level (Beginner, Intermediate, Advanced), and a list of 3-5 materials. Return the response in JSON format.'
+                  'Generate metadata for a science experiment titled "$title". Provide a description (50-100 words), subject area (must be one of: Biology, Chemistry, Physics), difficulty level (must be one of: Beginner, Intermediate, Advanced), and a list of 3-5 materials. Return the response in JSON format.'
             }
           ],
         }),
@@ -28,7 +28,16 @@ class OpenAIService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return jsonDecode(data['choices'][0]['message']['content']);
+        final metadata = jsonDecode(data['choices'][0]['message']['content']);
+        // Ensure subject and difficulty are valid
+        final validSubjects = ['Biology', 'Chemistry', 'Physics'];
+        final validDifficulties = ['Beginner', 'Intermediate', 'Advanced'];
+        return {
+          'description': metadata['description'] ?? '',
+          'subject': validSubjects.contains(metadata['subject']) ? metadata['subject'] : 'Biology',
+          'difficulty': validDifficulties.contains(metadata['difficulty']) ? metadata['difficulty'] : 'Beginner',
+          'materials': (metadata['materials'] as List<dynamic>?)?.cast<String>() ?? [],
+        };
       }
       throw Exception('Failed to generate metadata: ${response.body}');
     } catch (e) {
