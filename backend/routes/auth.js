@@ -4,7 +4,6 @@ import { auth, authorizeRole } from '../middleware/auth.js';
 import Student from '../models/Student.js';
 import Teacher from '../models/Teacher.js';
 
-
 const router = express.Router();
 
 // Register student
@@ -55,7 +54,7 @@ router.post('/login', async (req, res) => {
   try {
     let user = await Student.findOne({ email }) || await Teacher.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'No user found' });
     }
 
     const isMatch = await user.comparePassword(password);
@@ -94,7 +93,7 @@ router.get('/student/dashboard', auth, authorizeRole(['student']), async (req, r
 
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await Teacher.findById(req.teacher.id); // Adjust for your model
+    const user = await Teacher.findById(req.teacher.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
