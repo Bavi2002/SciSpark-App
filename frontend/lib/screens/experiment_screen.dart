@@ -32,6 +32,13 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
   bool _isSpeaking = false;
   Map<int, YoutubePlayerController> _videoControllers = {};
 
+  // Theme colors
+  final Color _primaryColor = const Color.fromRGBO(124, 58, 237, 1);
+  final Color _backgroundColor = const Color(0xFFF8F9FA);
+  final Color _cardColor = Colors.white;
+  final Color _textColor = Colors.black87;
+  final Color _secondaryTextColor = Colors.black54;
+
   @override
   void initState() {
     super.initState();
@@ -149,9 +156,13 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
           }
           if (_experiment != null && _completedSteps.length == _experiment!['steps'].length) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Experiment Completed! Badge Earned.'),
-                backgroundColor: Colors.green,
+              SnackBar(
+                content: const Text('🎉 Experiment Completed! Badge Earned.'),
+                backgroundColor: _primaryColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             );
           }
@@ -184,7 +195,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: _primaryColor)),
           ),
         ],
       ),
@@ -199,9 +210,13 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
       if (mounted) {
         Navigator.pop(context); // Return to ExperimentListScreen
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Experiment deleted successfully.'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('Experiment deleted successfully.'),
+            backgroundColor: _primaryColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -262,217 +277,633 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
     debugPrint('Building ExperimentDetailScreen');
     if (_isLoading || _userRole == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: _backgroundColor,
+        appBar: AppBar(
+          title: Text(widget.title),
+          backgroundColor: _primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: _primaryColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.science_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 24),
+              CircularProgressIndicator(color: _primaryColor),
+              const SizedBox(height: 16),
+              Text(
+                'Loading Experiment...',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: _secondaryTextColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
-        body: Center(child: Text('Error: $_error', style: const TextStyle(color: Colors.red))),
+        backgroundColor: _backgroundColor,
+        appBar: AppBar(
+          title: Text(widget.title),
+          backgroundColor: _primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: _primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Icon(
+                  Icons.error_outline_rounded,
+                  size: 48,
+                  color: _primaryColor,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Failed to Load Experiment',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _textColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  _error!,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _secondaryTextColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _initialize,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text('Try Again'),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     if (_experiment == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
+        backgroundColor: _backgroundColor,
+        appBar: AppBar(
+          title: Text(widget.title),
+          backgroundColor: _primaryColor,
+          foregroundColor: Colors.white,
+        ),
         body: const Center(child: Text('Failed to load experiment')),
       );
     }
 
     final isStudent = _userRole == 'student';
+    final totalSteps = _experiment!['steps'].length;
+    final completedCount = _completedSteps.length;
+    final progress = totalSteps > 0 ? completedCount / totalSteps : 0.0;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
         title: Text(_experiment!['title']),
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: _primaryColor,
+        foregroundColor: Colors.white,
         actions: [
           if (_userRole == 'teacher') ...[
-            IconButton(
-              icon: const Icon(Icons.edit),
-              tooltip: 'Edit Experiment',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditExperimentScreen(experiment: _experiment!),
-                  ),
-                );
-              },
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.edit_rounded, size: 20),
+                tooltip: 'Edit Experiment',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditExperimentScreen(experiment: _experiment!),
+                    ),
+                  );
+                },
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              tooltip: 'Delete Experiment',
-              onPressed: _deleteExperiment,
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.delete_rounded, size: 20),
+                tooltip: 'Delete Experiment',
+                onPressed: _deleteExperiment,
+              ),
             ),
           ],
         ],
       ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Thumbnail Section
               if (_experiment!['thumbnail'] != null &&
                   RegExp(r'\.(jpg|jpeg|png)$', caseSensitive: false).hasMatch(_experiment!['thumbnail']))
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: CachedNetworkImage(
-                    imageUrl: _experiment!['thumbnail'],
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorWidget: (context, url, error) => Container(
-                      height: 200,
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: Text(
-                          'Failed to load thumbnail',
-                          style: TextStyle(color: Colors.red),
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: CachedNetworkImage(
+                      imageUrl: _experiment!['thumbnail'],
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => Container(
+                        color: _primaryColor.withOpacity(0.1),
+                        child: Center(
+                          child: Icon(
+                            Icons.science_rounded,
+                            color: _primaryColor.withOpacity(0.5),
+                            size: 60,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              const SizedBox(height: 16),
-              Text(
-                _experiment!['description'],
-                style: const TextStyle(fontSize: 16),
+              const SizedBox(height: 24),
+
+              // Experiment Info Card
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: _cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _primaryColor.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _experiment!['title'],
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _experiment!['description'],
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: _secondaryTextColor,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        _buildInfoChip(
+                          icon: Icons.category_rounded,
+                          text: _experiment!['subject'] ?? 'Science',
+                        ),
+                        const SizedBox(width: 12),
+                        _buildInfoChip(
+                          icon: Icons.speed_rounded,
+                          text: _experiment!['difficulty'] ?? 'Beginner',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Subject: ${_experiment!['subject']} | Difficulty: ${_experiment!['difficulty']}',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-              const Text('Materials:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ..._experiment!['materials'].map<Widget>((mat) => Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Text('- $mat'),
-                  )).toList(),
-              const SizedBox(height: 16),
-              if (isStudent && !_isStarted)
+              const SizedBox(height: 24),
+
+              // Progress Section for Students
+              if (isStudent && _isStarted)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: _cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: _primaryColor.withOpacity(0.1)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: _primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              Icons.trending_up_rounded,
+                              color: _primaryColor,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Your Progress',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: _textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey[200],
+                          color: _primaryColor,
+                          minHeight: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '$completedCount/$totalSteps steps completed',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _secondaryTextColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '${(progress * 100).toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: _primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Start Button for Students
+              if (isStudent && !_isStarted) ...[
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _startExperiment,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: _primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
+                      elevation: 2,
                     ),
-                    child: const Text(
-                      'Start Experiment',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.play_arrow_rounded, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Start Experiment',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+              ],
+
+              // Materials Section
+              const SizedBox(height: 24),
+              _buildSectionHeader('Materials Required', Icons.science_rounded),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: _cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _primaryColor.withOpacity(0.1)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ..._experiment!['materials'].asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final material = entry.value;
+                      return Container(
+                        margin: EdgeInsets.only(bottom: index == _experiment!['materials'].length - 1 ? 0 : 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _backgroundColor,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: _primaryColor.withOpacity(0.05)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: _primaryColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.check_circle_rounded,
+                                color: _primaryColor,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                material,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: _textColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+
+              // Steps Section
+              const SizedBox(height: 32),
+              _buildSectionHeader('Experiment Steps', Icons.list_alt_rounded),
               const SizedBox(height: 16),
-              const Text('Steps:', style: TextStyle(fontWeight: FontWeight.bold)),
               ..._experiment!['steps'].map<Widget>((step) {
                 final stepNumber = step['stepNumber'];
                 final isCompleted = _completedSteps.contains(stepNumber);
                 final videoId = step['mediaUrl'] != null ? YoutubePlayer.convertUrlToId(step['mediaUrl']) : null;
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Step $stepNumber: ${step['instruction']}',
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                _isSpeaking ? Icons.stop : Icons.volume_up,
-                                color: Colors.grey[600],
-                              ),
-                              onPressed: () => _speakStep(step['instruction']),
-                            ),
-                          ],
+                
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: _cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isCompleted ? _primaryColor : _primaryColor.withOpacity(0.1),
+                      width: isCompleted ? 2 : 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Step Header
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: isCompleted ? _primaryColor.withOpacity(0.05) : Colors.transparent,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
                         ),
-                        if (step['mediaUrl'] != null && videoId != null)
-                          Container(
-                            height: 200,
-                            margin: const EdgeInsets.only(top: 8),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: YoutubePlayer(
-                                controller: _videoControllers[stepNumber]!,
-                                showVideoProgressIndicator: true,
-                                progressIndicatorColor: Colors.black,
-                                progressColors: const ProgressBarColors(
-                                  playedColor: Colors.black,
-                                  handleColor: Colors.black45,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: isCompleted ? _primaryColor : Colors.grey[300],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '$stepNumber',
+                                  style: TextStyle(
+                                    color: isCompleted ? Colors.white : _textColor,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
                             ),
-                          )
-                        else if (step['mediaUrl'] != null)
-                          Container(
-                            height: 200,
-                            margin: const EdgeInsets.only(top: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(12),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                step['instruction'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: _textColor,
+                                  height: 1.4,
+                                ),
+                              ),
                             ),
-                            child: const Center(
-                              child: Icon(Icons.videocam_off, color: Colors.grey, size: 48),
+                            const SizedBox(width: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: _isSpeaking ? _primaryColor.withOpacity(0.1) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  _isSpeaking ? Icons.stop_rounded : Icons.volume_up_rounded,
+                                  color: _primaryColor,
+                                  size: 20,
+                                ),
+                                onPressed: () => _speakStep(step['instruction']),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Video Section
+                      if (step['mediaUrl'] != null && videoId != null)
+                        Container(
+                          height: 200,
+                          margin: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: YoutubePlayer(
+                              controller: _videoControllers[stepNumber]!,
+                              showVideoProgressIndicator: true,
+                              progressIndicatorColor: _primaryColor,
+                              progressColors: ProgressBarColors(
+                                playedColor: _primaryColor,
+                                handleColor: _primaryColor,
+                                bufferedColor: _primaryColor.withOpacity(0.3),
+                              ),
                             ),
                           ),
-                        if (isStudent && _isStarted && !isCompleted)
-                          SizedBox(
+                        )
+                      else if (step['mediaUrl'] != null)
+                        Container(
+                          height: 120,
+                          margin: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: _primaryColor.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: _primaryColor.withOpacity(0.1)),
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.videocam_off_rounded, color: _primaryColor.withOpacity(0.5), size: 40),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Video Not Available',
+                                  style: TextStyle(
+                                    color: _secondaryTextColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      // Action Button for Students
+                      if (isStudent && _isStarted && !isCompleted)
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          child: SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () => _markStepCompleted(stepNumber),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
+                                backgroundColor: _primaryColor,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Text(
-                                'Mark as Completed',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.check_circle_rounded, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Mark as Completed',
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                        else if (isStudent && isCompleted)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 8),
-                            child: Text(
-                              'Completed',
-                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                            ),
                           ),
-                      ],
-                    ),
+                        )
+                      else if (isStudent && isCompleted)
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle_rounded, color: _primaryColor, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Completed',
+                                style: TextStyle(
+                                  color: _primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                 );
               }).toList(),
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
-                ),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -483,6 +914,56 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
               currentStepContext: 'Step ${currentStep!['stepNumber']}: ${currentStep!['instruction']}',
             )
           : null,
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: _primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 20, color: _primaryColor),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+            letterSpacing: -0.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoChip({required IconData icon, required String text}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: _primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: _primaryColor),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _primaryColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
