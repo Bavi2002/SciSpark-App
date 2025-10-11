@@ -41,9 +41,12 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
     _descriptionController.text = widget.experiment['description'] ?? '';
     _selectedSubject = widget.experiment['subject'] ?? 'Biology';
     _selectedDifficulty = widget.experiment['difficulty'] ?? 'Beginner';
-    _materialsController.text = (widget.experiment['materials'] as List<dynamic>?)?.join(', ') ?? '';
+    _materialsController.text =
+        (widget.experiment['materials'] as List<dynamic>?)?.join(', ') ?? '';
     if (widget.experiment['steps'] != null) {
-      _steps.addAll(List<Map<String, dynamic>>.from(widget.experiment['steps']));
+      _steps.addAll(
+        List<Map<String, dynamic>>.from(widget.experiment['steps']),
+      );
     }
   }
 
@@ -58,9 +61,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
               Text('Please enter a step instruction'),
             ],
           ),
-          backgroundColor: _primaryColor,
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -79,9 +84,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                 Text('Media URL must be a valid YouTube URL'),
               ],
             ),
-            backgroundColor: _primaryColor,
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         return;
@@ -112,8 +119,12 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
 
   Future<void> _editStep(int index) async {
     final step = _steps[index];
-    final editInstructionController = TextEditingController(text: step['instruction']);
-    final editMediaUrlController = TextEditingController(text: step['mediaUrl'] ?? '');
+    final editInstructionController = TextEditingController(
+      text: step['instruction'],
+    );
+    final editMediaUrlController = TextEditingController(
+      text: step['mediaUrl'] ?? '',
+    );
     YoutubePlayerController? editYoutubeController;
 
     if (editMediaUrlController.text.isNotEmpty) {
@@ -155,14 +166,16 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                     ),
                   ),
                   maxLines: 3,
-                  validator: (value) => value!.isEmpty ? 'Instruction is required' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Instruction is required' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: editMediaUrlController,
                   decoration: InputDecoration(
                     labelText: 'YouTube Video URL (Optional)',
-                    hintText: 'Add a YouTube video URL (e.g., https://youtu.be/VIDEO_ID)',
+                    hintText:
+                        'Add a YouTube video URL (e.g., https://youtu.be/VIDEO_ID)',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -223,17 +236,18 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Step instruction cannot be empty'),
-                      backgroundColor: _primaryColor,
+                      backgroundColor: Colors.red,
                     ),
                   );
                   return;
                 }
                 final mediaUrl = editMediaUrlController.text.trim();
-                if (mediaUrl.isNotEmpty && YoutubePlayer.convertUrlToId(mediaUrl) == null) {
+                if (mediaUrl.isNotEmpty &&
+                    YoutubePlayer.convertUrlToId(mediaUrl) == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Media URL must be a valid YouTube URL'),
-                      backgroundColor: _primaryColor,
+                      backgroundColor: Colors.red,
                     ),
                   );
                   return;
@@ -281,9 +295,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                 Text('Step updated successfully.'),
               ],
             ),
-            backgroundColor: _primaryColor,
+            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       } catch (e) {
@@ -301,12 +317,17 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
     }
     setState(() => _isLoadingAI = true);
     try {
-      final metadata = await OpenAIService.generateExperimentMetadata(_titleController.text);
+      final metadata = await OpenAIService.generateExperimentMetadata(
+        _titleController.text,
+      );
       setState(() {
-        _descriptionController.text = metadata['description'] ?? _descriptionController.text;
+        _descriptionController.text =
+            metadata['description'] ?? _descriptionController.text;
         _selectedSubject = metadata['subject'] ?? _selectedSubject;
         _selectedDifficulty = metadata['difficulty'] ?? _selectedDifficulty;
-        _materialsController.text = (metadata['materials'] as List<dynamic>?)?.join(', ') ?? _materialsController.text;
+        _materialsController.text =
+            (metadata['materials'] as List<dynamic>?)?.join(', ') ??
+            _materialsController.text;
         _isLoadingAI = false;
       });
     } catch (e) {
@@ -338,7 +359,10 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
           'steps': _steps,
         };
 
-        await ApiService.updateExperiment(widget.experiment['_id'], experimentData);
+        await ApiService.updateExperiment(
+          widget.experiment['_id'],
+          experimentData,
+        );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -349,9 +373,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                 Text('Experiment updated successfully!'),
               ],
             ),
-            backgroundColor: _primaryColor,
+            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         Navigator.pop(context);
@@ -366,9 +392,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                 Expanded(child: Text('Failed to update experiment: $e')),
               ],
             ),
-            backgroundColor: _primaryColor,
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       } finally {
@@ -384,9 +412,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
               Text('Please add at least one step'),
             ],
           ),
-          backgroundColor: _primaryColor,
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -504,10 +534,7 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
             onChanged: onChanged,
             validator: validator,
             items: items.map((String item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              );
+              return DropdownMenuItem<String>(value: item, child: Text(item));
             }).toList(),
             decoration: InputDecoration(
               prefixIcon: Icon(icon, color: _primaryColor, size: 20),
@@ -582,28 +609,79 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         elevation: 0,
-        backgroundColor: _primaryColor,
-        foregroundColor: Colors.white,
+        toolbarHeight: 70,
+        leadingWidth: 56,
+        titleSpacing: 0,
         leading: Container(
           margin: const EdgeInsets.only(left: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: Color(0xFF562866),
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
-        title: const Text(
-          'Edit Experiment',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
             color: Colors.white,
-            letterSpacing: -0.5,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF562866), Color(0xFF7C3AED)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.edit_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Edit Experiment',
+                    style: TextStyle(
+                      color: Color(0xFF562866),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    'Update Content',
+                    style: TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       body: Form(
@@ -630,14 +708,18 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionHeader('Basic Information', Icons.info_outline_rounded),
+                  _buildSectionHeader(
+                    'Basic Information',
+                    Icons.info_outline_rounded,
+                  ),
                   const SizedBox(height: 24),
                   _buildInputField(
                     controller: _titleController,
                     label: 'Experiment Title',
                     icon: Icons.title_rounded,
                     hint: 'Enter a descriptive title',
-                    validator: (value) => value!.isEmpty ? 'Title is required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Title is required' : null,
                   ),
                   _buildInputField(
                     controller: _descriptionController,
@@ -645,7 +727,8 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                     icon: Icons.description_rounded,
                     hint: 'Describe what this experiment is about',
                     maxLines: 3,
-                    validator: (value) => value!.isEmpty ? 'Description is required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Description is required' : null,
                   ),
                   _buildDropdownField(
                     label: 'Subject',
@@ -657,7 +740,8 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                         _selectedSubject = value;
                       });
                     },
-                    validator: (value) => value == null ? 'Subject is required' : null,
+                    validator: (value) =>
+                        value == null ? 'Subject is required' : null,
                   ),
                   _buildDropdownField(
                     label: 'Difficulty Level',
@@ -669,7 +753,8 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                         _selectedDifficulty = value;
                       });
                     },
-                    validator: (value) => value == null ? 'Difficulty is required' : null,
+                    validator: (value) =>
+                        value == null ? 'Difficulty is required' : null,
                   ),
                   _buildInputField(
                     controller: _materialsController,
@@ -677,7 +762,8 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                     icon: Icons.inventory_2_rounded,
                     hint: 'Enter materials separated by commas',
                     maxLines: 2,
-                    validator: (value) => value!.isEmpty ? 'Materials are required' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Materials are required' : null,
                   ),
                 ],
               ),
@@ -694,7 +780,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.auto_awesome_rounded, color: _primaryColor, size: 24),
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: _primaryColor,
+                    size: 24,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -735,7 +825,9 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : Text('Generate'),
@@ -763,7 +855,10 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionHeader('Experiment Steps', Icons.format_list_numbered_rounded),
+                  _buildSectionHeader(
+                    'Experiment Steps',
+                    Icons.format_list_numbered_rounded,
+                  ),
                   const SizedBox(height: 24),
                   _buildInputField(
                     controller: _stepInstructionController,
@@ -832,7 +927,11 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: _addStep,
-                      icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                      icon: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                       label: const Text(
                         'Add Step',
                         style: TextStyle(
@@ -904,111 +1003,117 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                     ),
                     const SizedBox(height: 16),
                     ..._steps.asMap().entries.map(
-                          (entry) => Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: _backgroundColor,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: _primaryColor.withOpacity(0.1)),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: _primaryColor,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${entry.value['stepNumber']}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                      (entry) => Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: _backgroundColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _primaryColor.withOpacity(0.1),
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: _primaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${entry.value['stepNumber']}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        entry.value['instruction'],
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: _textColor,
-                                          fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.value['instruction'],
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: _textColor,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  if (entry.value['mediaUrl'] != null) ...[
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.video_library_rounded,
+                                          size: 14,
+                                          color: _primaryColor,
                                         ),
-                                      ),
-                                      if (entry.value['mediaUrl'] != null) ...[
-                                        const SizedBox(height: 6),
-                                        Row(
-                                          children: [
-                                            Icon(Icons.video_library_rounded, size: 14, color: _primaryColor),
-                                            const SizedBox(width: 4),
-                                            Expanded(
-                                              child: Text(
-                                                'Video attached',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: _primaryColor,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            'Video attached',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: _primaryColor,
+                                              fontWeight: FontWeight.w500,
                                             ),
-                                          ],
+                                          ),
                                         ),
                                       ],
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: _primaryColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: IconButton(
-                                        onPressed: () => _editStep(entry.key),
-                                        icon: Icon(
-                                          Icons.edit_rounded,
-                                          color: _primaryColor,
-                                          size: 18,
-                                        ),
-                                        padding: const EdgeInsets.all(6),
-                                        constraints: const BoxConstraints(),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.red.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: IconButton(
-                                        onPressed: () => _removeStep(entry.key),
-                                        icon: Icon(
-                                          Icons.delete_outline_rounded,
-                                          color: Colors.red,
-                                          size: 18,
-                                        ),
-                                        padding: const EdgeInsets.all(6),
-                                        constraints: const BoxConstraints(),
-                                      ),
                                     ),
                                   ],
+                                ],
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: _primaryColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: IconButton(
+                                    onPressed: () => _editStep(entry.key),
+                                    icon: Icon(
+                                      Icons.edit_rounded,
+                                      color: _primaryColor,
+                                      size: 18,
+                                    ),
+                                    padding: const EdgeInsets.all(6),
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: IconButton(
+                                    onPressed: () => _removeStep(entry.key),
+                                    icon: Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: Colors.red,
+                                      size: 18,
+                                    ),
+                                    padding: const EdgeInsets.all(6),
+                                    constraints: const BoxConstraints(),
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
+                          ],
                         ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -1038,7 +1143,9 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1071,15 +1178,16 @@ class _EditExperimentScreenState extends State<EditExperimentScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline_rounded, color: Colors.red, size: 20),
+                    Icon(
+                      Icons.error_outline_rounded,
+                      color: Colors.red,
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         _error!,
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.red, fontSize: 14),
                       ),
                     ),
                   ],

@@ -72,7 +72,10 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
       home: FutureBuilder<String?>(
@@ -128,7 +131,12 @@ class MyApp extends StatelessWidget {
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                        color: const Color.fromRGBO(
+                          124,
+                          58,
+                          237,
+                          1,
+                        ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: Icon(
@@ -155,7 +163,9 @@ class MyApp extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const MyApp()),
+                          MaterialPageRoute(
+                            builder: (context) => const MyApp(),
+                          ),
                         );
                       },
                       child: const Text('Try Again'),
@@ -219,7 +229,12 @@ class MyApp extends StatelessWidget {
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                              color: const Color.fromRGBO(
+                                124,
+                                58,
+                                237,
+                                1,
+                              ).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(25),
                             ),
                             child: Icon(
@@ -246,7 +261,9 @@ class MyApp extends StatelessWidget {
                             onPressed: () {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (context) => const MyApp()),
+                                MaterialPageRoute(
+                                  builder: (context) => const MyApp(),
+                                ),
                               );
                             },
                             child: const Text('Try Again'),
@@ -263,12 +280,14 @@ class MyApp extends StatelessWidget {
               },
             );
           }
-          return LoginScreen(onLogin: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MyApp()),
-            );
-          });
+          return LoginScreen(
+            onLogin: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MyApp()),
+              );
+            },
+          );
         },
       ),
     );
@@ -283,24 +302,90 @@ class StudentDashboard extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text('Student Dashboard'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: 70,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF562866), Color(0xFF7C3AED)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.science_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Student Dashboard',
+                  style: TextStyle(
+                    color: Color(0xFF562866),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  'Explore & Learn',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           Container(
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.logout_rounded, size: 22),
-              onPressed: () async {
-                await AuthService.logout();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyApp()),
-                );
-              },
-              tooltip: 'Logout',
+            margin: const EdgeInsets.only(right: 16),
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.logout_rounded,
+                      size: 22,
+                      color: Color.fromRGBO(124, 58, 237, 1),
+                    ),
+                    onPressed: () async {
+                      await AuthService.logout();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MyApp()),
+                      );
+                    },
+                    tooltip: 'Logout',
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -321,14 +406,19 @@ class StudentDashboard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.9),
-                      const Color.fromRGBO(124, 58, 237, 1),
+                      const Color.fromARGB(255, 255, 255, 255).withOpacity(0.9),
+                      const Color.fromARGB(255, 255, 255, 255),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.3),
+                      color: const Color.fromRGBO(
+                        124,
+                        58,
+                        237,
+                        1,
+                      ).withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -339,12 +429,17 @@ class StudentDashboard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: const Color.fromARGB(
+                          255,
+                          78,
+                          78,
+                          78,
+                        ).withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.school_rounded,
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 0, 0, 0),
                         size: 28,
                       ),
                     ),
@@ -358,7 +453,12 @@ class StudentDashboard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white.withOpacity(0.9),
+                              color: const Color.fromARGB(
+                                255,
+                                0,
+                                0,
+                                0,
+                              ).withOpacity(0.9),
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -367,7 +467,12 @@ class StudentDashboard extends StatelessWidget {
                             'Ready to explore amazing science experiments?',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white.withOpacity(0.8),
+                              color: const Color.fromARGB(
+                                255,
+                                48,
+                                48,
+                                48,
+                              ).withOpacity(0.8),
                             ),
                             maxLines: 2,
                           ),
@@ -462,9 +567,7 @@ class StudentDashboard extends StatelessWidget {
   }) {
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
@@ -506,10 +609,7 @@ class StudentDashboard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.black54,
-                ),
+                style: TextStyle(fontSize: 11, color: Colors.black54),
                 textAlign: TextAlign.center,
                 maxLines: 2,
               ),
@@ -528,25 +628,96 @@ class TeacherDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text('Teacher Dashboard'),
+  appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: 70,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF562866), Color(0xFF7C3AED)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.science_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Teacher Dashboard',
+                  style: TextStyle(
+                    color: Color(0xFF562866),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  'Manage & Create',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           Container(
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.logout_rounded, size: 22),
-              onPressed: () async {
-                await AuthService.logout();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyApp()),
-                );
-              },
-              tooltip: 'Logout',
+            margin: const EdgeInsets.only(right: 16),
+            child: Row(
+              children: [
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromRGBO(
+                      124,
+                      58,
+                      237,
+                      1,
+                    ).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.logout_rounded,
+                      size: 22,
+                      color: Color.fromRGBO(124, 58, 237, 1),
+                    ),
+                    onPressed: () async {
+                      await AuthService.logout();
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MyApp()),
+                      );
+                    },
+                    tooltip: 'Logout',
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -559,7 +730,7 @@ class TeacherDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome Section
-              Container(
+Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -567,14 +738,19 @@ class TeacherDashboard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.9),
-                      const Color.fromRGBO(124, 58, 237, 1),
+                      const Color.fromARGB(255, 255, 255, 255).withOpacity(0.9),
+                      const Color.fromARGB(255, 255, 255, 255),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.3),
+                      color: const Color.fromRGBO(
+                        124,
+                        58,
+                        237,
+                        1,
+                      ).withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -585,12 +761,17 @@ class TeacherDashboard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: const Color.fromARGB(
+                          255,
+                          78,
+                          78,
+                          78,
+                        ).withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
                         Icons.school_rounded,
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 0, 0, 0),
                         size: 28,
                       ),
                     ),
@@ -600,20 +781,30 @@ class TeacherDashboard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Welcome, Educator!',
+                            'Welcome Educator!',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white.withOpacity(0.9),
+                              color: const Color.fromARGB(
+                                255,
+                                0,
+                                0,
+                                0,
+                              ).withOpacity(0.9),
                               letterSpacing: -0.5,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Manage experiments and inspire young scientists',
+                            'Manage your experiments and inspire students today.',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white.withOpacity(0.8),
+                              color: const Color.fromARGB(
+                                255,
+                                48,
+                                48,
+                                48,
+                              ).withOpacity(0.8),
                             ),
                             maxLines: 2,
                           ),
@@ -670,8 +861,15 @@ class TeacherDashboard extends StatelessWidget {
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Failed to load user ID. Please log in again.'),
-                            backgroundColor: const Color.fromRGBO(124, 58, 237, 1),
+                            content: const Text(
+                              'Failed to load user ID. Please log in again.',
+                            ),
+                            backgroundColor: const Color.fromRGBO(
+                              124,
+                              58,
+                              237,
+                              1,
+                            ),
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -701,8 +899,15 @@ class TeacherDashboard extends StatelessWidget {
                       if (token == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Please log in as a teacher to add experiments.'),
-                            backgroundColor: const Color.fromRGBO(124, 58, 237, 1),
+                            content: const Text(
+                              'Please log in as a teacher to add experiments.',
+                            ),
+                            backgroundColor: const Color.fromRGBO(
+                              124,
+                              58,
+                              237,
+                              1,
+                            ),
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -729,69 +934,6 @@ class TeacherDashboard extends StatelessWidget {
               ),
 
               const SizedBox(height: 24),
-
-              // Teacher Resources Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  'Teacher Resources',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black.withOpacity(0.8),
-                    letterSpacing: -0.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.trending_up_rounded,
-                            color: const Color.fromRGBO(124, 58, 237, 1),
-                            size: 18,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Quick Resources',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildResourceItem('Science Curriculum Guide', Icons.menu_book_rounded),
-                    _buildResourceItem('Experiment Templates', Icons.description_rounded),
-                    _buildResourceItem('Student Progress Reports', Icons.assessment_rounded),
-                    _buildResourceItem('Teaching Materials', Icons.folder_rounded),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -807,9 +949,7 @@ class TeacherDashboard extends StatelessWidget {
   }) {
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
@@ -851,10 +991,7 @@ class TeacherDashboard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.black54,
-                ),
+                style: TextStyle(fontSize: 11, color: Colors.black54),
                 textAlign: TextAlign.center,
                 maxLines: 2,
               ),
@@ -878,11 +1015,7 @@ class TeacherDashboard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: const Color.fromRGBO(124, 58, 237, 1),
-            size: 18,
-          ),
+          Icon(icon, color: const Color.fromRGBO(124, 58, 237, 1), size: 18),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

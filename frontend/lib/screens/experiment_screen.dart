@@ -154,7 +154,8 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
           if (!_completedSteps.contains(stepNumber)) {
             _completedSteps.add(stepNumber);
           }
-          if (_experiment != null && _completedSteps.length == _experiment!['steps'].length) {
+          if (_experiment != null &&
+              _completedSteps.length == _experiment!['steps'].length) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: const Text('🎉 Experiment Completed! Badge Earned.'),
@@ -187,7 +188,9 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Experiment'),
-        content: const Text('Are you sure you want to delete this experiment? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this experiment? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -356,10 +359,7 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
                   _error!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _secondaryTextColor,
-                  ),
+                  style: TextStyle(fontSize: 14, color: _secondaryTextColor),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -369,7 +369,10 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -402,39 +405,120 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
-        title: Text(_experiment!['title']),
+        backgroundColor: Colors.white,
         elevation: 0,
-        backgroundColor: _primaryColor,
-        foregroundColor: Colors.white,
+        toolbarHeight: 70,
+        leadingWidth: 56,
+        titleSpacing: 0,
+        leading: Container(
+          margin: const EdgeInsets.only(left: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: Color(0xFF562866),
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF562866), Color(0xFF7C3AED)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.science_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _experiment!['title'],
+                    style: const TextStyle(
+                      color: Color(0xFF562866),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const Text(
+                    'Experiment Details',
+                    style: TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
           if (_userRole == 'teacher') ...[
             Container(
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFF562866).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
-                icon: const Icon(Icons.edit_rounded, size: 20),
+                icon: const Icon(
+                  Icons.edit_rounded,
+                  size: 20,
+                  color: Color(0xFF562866),
+                ),
                 tooltip: 'Edit Experiment',
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditExperimentScreen(experiment: _experiment!),
+                      builder: (context) =>
+                          EditExperimentScreen(experiment: _experiment!),
                     ),
                   );
                 },
               ),
             ),
             Container(
-              margin: const EdgeInsets.only(right: 8),
+              margin: const EdgeInsets.only(right: 16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
-                icon: const Icon(Icons.delete_rounded, size: 20),
+                icon: Icon(
+                  Icons.delete_rounded,
+                  size: 20,
+                  color: Colors.red.shade600,
+                ),
                 tooltip: 'Delete Experiment',
                 onPressed: _deleteExperiment,
               ),
@@ -451,7 +535,10 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
             children: [
               // Thumbnail Section
               if (_experiment!['thumbnail'] != null &&
-                  RegExp(r'\.(jpg|jpeg|png)$', caseSensitive: false).hasMatch(_experiment!['thumbnail']))
+                  RegExp(
+                    r'\.(jpg|jpeg|png)$',
+                    caseSensitive: false,
+                  ).hasMatch(_experiment!['thumbnail']))
                 Container(
                   height: 200,
                   width: double.infinity,
@@ -636,7 +723,10 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                         SizedBox(width: 8),
                         Text(
                           'Start Experiment',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -663,12 +753,18 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                       final index = entry.key;
                       final material = entry.value;
                       return Container(
-                        margin: EdgeInsets.only(bottom: index == _experiment!['materials'].length - 1 ? 0 : 12),
+                        margin: EdgeInsets.only(
+                          bottom: index == _experiment!['materials'].length - 1
+                              ? 0
+                              : 12,
+                        ),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: _backgroundColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: _primaryColor.withOpacity(0.05)),
+                          border: Border.all(
+                            color: _primaryColor.withOpacity(0.05),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -710,15 +806,19 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
               ..._experiment!['steps'].map<Widget>((step) {
                 final stepNumber = step['stepNumber'];
                 final isCompleted = _completedSteps.contains(stepNumber);
-                final videoId = step['mediaUrl'] != null ? YoutubePlayer.convertUrlToId(step['mediaUrl']) : null;
-                
+                final videoId = step['mediaUrl'] != null
+                    ? YoutubePlayer.convertUrlToId(step['mediaUrl'])
+                    : null;
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
                     color: _cardColor,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isCompleted ? _primaryColor : _primaryColor.withOpacity(0.1),
+                      color: isCompleted
+                          ? _primaryColor
+                          : _primaryColor.withOpacity(0.1),
                       width: isCompleted ? 2 : 1,
                     ),
                     boxShadow: [
@@ -736,7 +836,9 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: isCompleted ? _primaryColor.withOpacity(0.05) : Colors.transparent,
+                          color: isCompleted
+                              ? _primaryColor.withOpacity(0.05)
+                              : Colors.transparent,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(20),
                             topRight: Radius.circular(20),
@@ -749,14 +851,18 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                               width: 32,
                               height: 32,
                               decoration: BoxDecoration(
-                                color: isCompleted ? _primaryColor : Colors.grey[300],
+                                color: isCompleted
+                                    ? _primaryColor
+                                    : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
                                 child: Text(
                                   '$stepNumber',
                                   style: TextStyle(
-                                    color: isCompleted ? Colors.white : _textColor,
+                                    color: isCompleted
+                                        ? Colors.white
+                                        : _textColor,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 14,
                                   ),
@@ -778,16 +884,21 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                             const SizedBox(width: 12),
                             Container(
                               decoration: BoxDecoration(
-                                color: _isSpeaking ? _primaryColor.withOpacity(0.1) : Colors.transparent,
+                                color: _isSpeaking
+                                    ? _primaryColor.withOpacity(0.1)
+                                    : Colors.transparent,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: IconButton(
                                 icon: Icon(
-                                  _isSpeaking ? Icons.stop_rounded : Icons.volume_up_rounded,
+                                  _isSpeaking
+                                      ? Icons.stop_rounded
+                                      : Icons.volume_up_rounded,
                                   color: _primaryColor,
                                   size: 20,
                                 ),
-                                onPressed: () => _speakStep(step['instruction']),
+                                onPressed: () =>
+                                    _speakStep(step['instruction']),
                               ),
                             ),
                           ],
@@ -830,13 +941,19 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                           decoration: BoxDecoration(
                             color: _primaryColor.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: _primaryColor.withOpacity(0.1)),
+                            border: Border.all(
+                              color: _primaryColor.withOpacity(0.1),
+                            ),
                           ),
                           child: Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.videocam_off_rounded, color: _primaryColor.withOpacity(0.5), size: 40),
+                                Icon(
+                                  Icons.videocam_off_rounded,
+                                  color: _primaryColor.withOpacity(0.5),
+                                  size: 40,
+                                ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Video Not Available',
@@ -861,7 +978,9 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: _primaryColor,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -873,7 +992,10 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                                   SizedBox(width: 8),
                                   Text(
                                     'Mark as Completed',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -885,7 +1007,11 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                           child: Row(
                             children: [
-                              Icon(Icons.check_circle_rounded, color: _primaryColor, size: 20),
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: _primaryColor,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 'Completed',
@@ -911,7 +1037,8 @@ class _ExperimentDetailScreenState extends State<ExperimentDetailScreen> {
       floatingActionButton: currentStep != null
           ? AIAssistantButton(
               experimentId: widget.experimentId,
-              currentStepContext: 'Step ${currentStep!['stepNumber']}: ${currentStep!['instruction']}',
+              currentStepContext:
+                  'Step ${currentStep!['stepNumber']}: ${currentStep!['instruction']}',
             )
           : null,
     );
