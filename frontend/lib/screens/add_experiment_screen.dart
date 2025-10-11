@@ -44,7 +44,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
               Text('Please enter a title to generate metadata'),
             ],
           ),
-          backgroundColor: _primaryColor,
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -76,7 +76,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
               Text('AI metadata generated successfully!'),
             ],
           ),
-          backgroundColor: _primaryColor,
+          backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -114,7 +114,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
               Text('Please enter a step instruction'),
             ],
           ),
-          backgroundColor: _primaryColor,
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -135,7 +135,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                 Text('Media URL must be a valid YouTube URL'),
               ],
             ),
-            backgroundColor: _primaryColor,
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -201,7 +201,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
                 Text('Experiment created successfully!'),
               ],
             ),
-            backgroundColor: _primaryColor,
+            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -240,7 +240,7 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
               Text('Please add at least one step'),
             ],
           ),
-          backgroundColor: _primaryColor,
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
@@ -471,31 +471,85 @@ class _AddExperimentScreenState extends State<AddExperimentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _backgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: _primaryColor,
-        foregroundColor: Colors.white,
-        leading: Container(
-          margin: const EdgeInsets.only(left: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+appBar: AppBar(
+  backgroundColor: Colors.white,
+  elevation: 0,
+  toolbarHeight: 70,
+  leadingWidth: 56,
+  titleSpacing: 0,
+  leading: Container(
+    margin: const EdgeInsets.only(left: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: IconButton(
+      icon: const Icon(
+        Icons.arrow_back_rounded,
+        color: Color(0xFF562866),
+      ),
+      onPressed: () => Navigator.of(context).pop(),
+    ),
+  ),
+  flexibleSpace: Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
         ),
-        title: const Text(
-          'Create Experiment',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-            letterSpacing: -0.5,
+      ],
+    ),
+  ),
+  title: Row(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF562866),
+              Color(0xFF7C3AED),
+            ],
           ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(
+          Icons.add_circle_rounded,
+          color: Colors.white,
+          size: 24,
         ),
       ),
+      const SizedBox(width: 12),
+      const Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Create Experiment',
+              style: TextStyle(
+                color: Color(0xFF562866),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Add New Content',
+              style: TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
       body: Form(
         key: _formKey,
         child: ListView(

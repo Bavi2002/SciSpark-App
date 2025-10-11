@@ -6,8 +6,10 @@ import 'package:frontend/services/api_service.dart';
 import 'package:frontend/services/auth_service.dart';
 
 class ExperimentListScreen extends StatefulWidget {
-  final bool showTeacherExperiments; // Flag to show teacher-specific experiments
-  final String? teacherId; // Optional teacher ID for teacher-specific experiments
+  final bool
+  showTeacherExperiments; // Flag to show teacher-specific experiments
+  final String?
+  teacherId; // Optional teacher ID for teacher-specific experiments
 
   const ExperimentListScreen({
     super.key,
@@ -39,7 +41,8 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
 
   void _refreshExperiments() {
     setState(() {
-      _experimentsFuture = widget.showTeacherExperiments && widget.teacherId != null
+      _experimentsFuture =
+          widget.showTeacherExperiments && widget.teacherId != null
           ? ApiService.getTeacherExperiments(widget.teacherId!)
           : ApiService.getExperiments();
     });
@@ -50,31 +53,100 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
+        backgroundColor: Colors.white,
         elevation: 0,
-        backgroundColor: const Color.fromRGBO(124, 58, 237, 1),
-        foregroundColor: Colors.white,
-        title: Text(
-          widget.showTeacherExperiments ? 'My Experiments' : 'Science Experiments',
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
+        toolbarHeight: 70,
+        leadingWidth: 0,
+        titleSpacing: 16,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
             color: Colors.white,
-            letterSpacing: -0.5,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
         ),
-        actions: [
-          if (_userRole == 'teacher') // Show add button only for teachers
+        title: Row(
+          children: [
             Container(
-              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF562866), Color(0xFF7C3AED)],
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
+              child: Icon(
+                widget.showTeacherExperiments
+                    ? Icons.person_rounded
+                    : Icons.science_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.showTeacherExperiments
+                        ? 'My Experiments'
+                        : 'Science Experiments',
+                    style: const TextStyle(
+                      color: Color(0xFF562866),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    widget.showTeacherExperiments
+                        ? 'Manage your content'
+                        : 'Discover & Learn',
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          if (_userRole == 'teacher')
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF562866), Color(0xFF7C3AED)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF562866).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: IconButton(
-                icon: const Icon(Icons.add_rounded, size: 22),
+                icon: const Icon(
+                  Icons.add_rounded,
+                  size: 22,
+                  color: Colors.white,
+                ),
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AddExperimentScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const AddExperimentScreen(),
+                  ),
                 ),
                 tooltip: 'Add Experiment',
               ),
@@ -102,7 +174,12 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.3),
+                            color: const Color.fromRGBO(
+                              124,
+                              58,
+                              237,
+                              1,
+                            ).withOpacity(0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -140,7 +217,12 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                        color: const Color.fromRGBO(
+                          124,
+                          58,
+                          237,
+                          1,
+                        ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: Icon(
@@ -178,7 +260,10 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromRGBO(124, 58, 237, 1),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -204,18 +289,30 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                        color: const Color.fromRGBO(
+                          124,
+                          58,
+                          237,
+                          1,
+                        ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(30),
                       ),
                       child: Icon(
                         Icons.science_outlined,
                         size: 60,
-                        color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.7),
+                        color: const Color.fromRGBO(
+                          124,
+                          58,
+                          237,
+                          1,
+                        ).withOpacity(0.7),
                       ),
                     ),
                     const SizedBox(height: 32),
                     Text(
-                      widget.showTeacherExperiments ? 'No Experiments Created' : 'No Experiments Available',
+                      widget.showTeacherExperiments
+                          ? 'No Experiments Created'
+                          : 'No Experiments Available',
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -227,7 +324,7 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 40),
                       child: Text(
-                        widget.showTeacherExperiments 
+                        widget.showTeacherExperiments
                             ? 'Create your first experiment to inspire young scientists'
                             : 'Check back later for new experiments or contact your teacher',
                         style: TextStyle(
@@ -243,9 +340,15 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                       ElevatedButton.icon(
                         onPressed: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => const AddExperimentScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const AddExperimentScreen(),
+                          ),
                         ),
-                        icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                        icon: const Icon(
+                          Icons.add_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                         label: const Text(
                           'Create First Experiment',
                           style: TextStyle(
@@ -254,8 +357,16 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromRGBO(124, 58, 237, 1),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          backgroundColor: const Color.fromRGBO(
+                            124,
+                            58,
+                            237,
+                            1,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -276,12 +387,20 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                 children: [
                   // Header with count
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                        color: const Color.fromRGBO(
+                          124,
+                          58,
+                          237,
+                          1,
+                        ).withOpacity(0.1),
                       ),
                     ),
                     child: Row(
@@ -289,7 +408,12 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                            color: const Color.fromRGBO(
+                              124,
+                              58,
+                              237,
+                              1,
+                            ).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(
@@ -311,13 +435,15 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Experiments List
                   Expanded(
                     child: ListView.separated(
                       itemCount: experiments.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 16),
-                      itemBuilder: (ctx, i) => _buildExperimentCard(experiments[i]),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (ctx, i) =>
+                          _buildExperimentCard(experiments[i]),
                     ),
                   ),
                 ],
@@ -378,16 +504,24 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.3),
+                        color: const Color.fromRGBO(
+                          124,
+                          58,
+                          237,
+                          1,
+                        ).withOpacity(0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: experiment.thumbnail != null &&
+                  child:
+                      experiment.thumbnail != null &&
                           experiment.thumbnail!.isNotEmpty &&
-                          RegExp(r'\.(jpg|jpeg|png)$', caseSensitive: false)
-                              .hasMatch(experiment.thumbnail!)
+                          RegExp(
+                            r'\.(jpg|jpeg|png)$',
+                            caseSensitive: false,
+                          ).hasMatch(experiment.thumbnail!)
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(15),
                           child: Image.network(
@@ -395,14 +529,14 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => 
+                            errorBuilder: (context, error, stackTrace) =>
                                 _buildFallbackIcon(),
                           ),
                         )
                       : _buildFallbackIcon(),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Experiment Details
                 Expanded(
                   child: Column(
@@ -432,9 +566,17 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                       ),
                       const SizedBox(height: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                          color: const Color.fromRGBO(
+                            124,
+                            58,
+                            237,
+                            1,
+                          ).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -450,12 +592,17 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                
+
                 // Arrow Icon
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color.fromRGBO(124, 58, 237, 1).withOpacity(0.1),
+                    color: const Color.fromRGBO(
+                      124,
+                      58,
+                      237,
+                      1,
+                    ).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -474,11 +621,7 @@ class _ExperimentListScreenState extends State<ExperimentListScreen> {
 
   Widget _buildFallbackIcon() {
     return const Center(
-      child: Icon(
-        Icons.science_rounded,
-        color: Colors.white,
-        size: 28,
-      ),
+      child: Icon(Icons.science_rounded, color: Colors.white, size: 28),
     );
   }
 }
