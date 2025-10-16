@@ -1,4 +1,3 @@
-
 import express from "express";
 import Experiment from "../models/Experiment.js";
 import { auth, authorizeRole } from "../middleware/auth.js";
@@ -76,7 +75,7 @@ router.post('/add', auth, authorizeRole(['teacher']), async (req, res) => {
 });
 
 
-// Get single experiment
+// Get one specific experiment
 router.get('/:id', async (req, res) => {
   try {
     const experiment = await Experiment.findById(req.params.id);
