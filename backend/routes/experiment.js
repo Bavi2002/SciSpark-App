@@ -27,7 +27,7 @@ router.get('/teacher/:id', auth, async (req, res) => {
   }
 });
 
-// Add experiment
+// Add new experiment
 router.post('/add', auth, authorizeRole(['teacher']), async (req, res) => {
   try {
     const { title, description, subject, difficulty, materials, steps, thumbnail } = req.body;
