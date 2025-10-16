@@ -14,7 +14,7 @@ const experimentSchema = new mongoose.Schema({
   difficulty: { type: String, required: true },
   materials: { type: [String], default: [] },
   steps: { type: [stepSchema], default: [] },
-  thumbnail: { type: String, required: false }, // Optional thumbnail URL
+  thumbnail: { type: String, required: false }, 
   createdAt: { type: Date, default: Date.now },
 });
 
